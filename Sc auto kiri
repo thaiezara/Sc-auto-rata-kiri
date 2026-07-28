@@ -1,1 +1,614 @@
-local _a=game:GetService(string.char(80,108,97,121,101,114,115))local _b=game:GetService(string.char(85,115,101,114,73,110,112,117,116,83,101,114,118,105,99,101))local _c=game:GetService(string.char(76,105,103,104,116,105,110,103))local _d=game:GetService(string.char(82,101,112,108,105,99,97,116,101,100,83,116,111,114,97,103,101))local _e=game:GetService(string.char(87,111,114,107,115,112,97,99,101))local _f=_a._f local _g=_f:WaitForChild(string.char(80,108,97,121,101,114,71,117,105))local _h=string.char(90,104,117,98,95,71,97,114,100,101,110,79,112,116)if _g:FindFirstChild(_h)then _g[_h]:Destroy()end local _i=Instance.new(string.char(83,99,114,101,101,110,71,117,105))_i.Name=_h _i.ResetOnSpawn=false _i.DisplayOrder=2000000000 _i.Parent=_g local _j=Instance.new(string.char(70,114,97,109,101))_j.Name=string.char(77,97,105,110,70,114,97,109,101)_j.Size=UDim2.new(0,420,0,400)_j.Position=UDim2.new(0.5,-210,0.5,-200)_j.BackgroundColor3=Color3.fromRGB(18,22,18)_j.BorderSizePixel=0 _j.Active=true _j.Parent=_i Instance.new(string.char(85,73,67,111,114,110,101,114),_j).CornerRadius=UDim.new(0,10)local _k=Instance.new(string.char(85,73,83,116,114,111,107,101))_k.Color=Color3.fromRGB(80,200,100)_k.Thickness=2 _k.Parent=_j local _l=Instance.new(string.char(70,114,97,109,101))_l.Size=UDim2.new(1,0,0,40)_l.BackgroundColor3=Color3.fromRGB(25,32,25)_l.BorderSizePixel=0 _l.Parent=_j Instance.new(string.char(85,73,67,111,114,110,101,114),_l).CornerRadius=UDim.new(0,10)local _m=Instance.new(string.char(84,101,120,116,76,97,98,101,108))_m.Size=UDim2.new(1,-90,1,0)_m.Position=UDim2.new(0,15,0,0)_m.BackgroundTransparency=1 _m.Text=string.char(90,104,117,98,32,124,32,77,97,115,116,101,114,32,71,97,114,100,101,110,32,40,77,117,108,116,105,32,65,117,116,111,45,66,117,121,41)_m.Font=Enum.Font.GothamBlack _m.TextColor3=Color3.fromRGB(255,255,255)_m.TextSize=12 _m.TextXAlignment=Enum.TextXAlignment.Left _m.Parent=_l local _n=Instance.new(string.char(84,101,120,116,66,117,116,116,111,110))_n.Size=UDim2.new(0,26,0,26)_n.Position=UDim2.new(1,-32,0,7)_n.BackgroundColor3=Color3.fromRGB(200,50,50)_n.Text=string.char(88)_n.Font=Enum.Font.GothamBold _n.TextColor3=Color3.fromRGB(255,255,255)_n.Parent=_l Instance.new(string.char(85,73,67,111,114,110,101,114),_n).CornerRadius=UDim.new(0,6)_n.MouseButton1Click:Connect(function()_i:Destroy()end)local _o=false local _p=Instance.new(string.char(84,101,120,116,66,117,116,116,111,110))_p.Size=UDim2.new(0,26,0,26)_p.Position=UDim2.new(1,-64,0,7)_p.BackgroundColor3=Color3.fromRGB(80,80,80)_p.Text=string.char(45)_p.Font=Enum.Font.GothamBold _p.TextColor3=Color3.fromRGB(255,255,255)_p.Parent=_l Instance.new(string.char(85,73,67,111,114,110,101,114),_p).CornerRadius=UDim.new(0,6)local _q=Instance.new(string.char(70,114,97,109,101))_q.Size=UDim2.new(1,0,1,-40)_q.Position=UDim2.new(0,0,0,40)_q.BackgroundTransparency=1 _q.Parent=_j _p.MouseButton1Click:Connect(function()_o=not _o _q.Visible=not _o if _o then _j.Size=UDim2.new(0,420,0,40)_p.Text=string.char(43)else _j.Size=UDim2.new(0,420,0,400)_p.Text=string.char(45)end end)local _r=Instance.new(string.char(84,101,120,116,66,117,116,116,111,110))_r.Size=UDim2.new(1,-20,0,26)_r.Position=UDim2.new(0,10,0,5)_r.BackgroundColor3=Color3.fromRGB(180,50,50)_r.Text=string.char(85,76,84,73,77,65,84,69,32,66,85,82,73,75,32,77,79,68,69,58,32,79,70,70,32,10060)_r.Font=Enum.Font.GothamBold _r.TextColor3=Color3.fromRGB(255,255,255)_r.TextSize=11 _r.Parent=_q Instance.new(string.char(85,73,67,111,114,110,101,114),_r).CornerRadius=UDim.new(0,6)local _s=(400/3)-4 local _t=Instance.new(string.char(84,101,120,116,66,117,116,116,111,110))_t.Size=UDim2.new(0,_s,0,26)_t.Position=UDim2.new(0,10,0,38)_t.BackgroundColor3=Color3.fromRGB(50,120,50)_t.Text=string.char(70,82,85,73,84,83)_t.Font=Enum.Font.GothamBold _t.TextColor3=Color3.fromRGB(255,255,255)_t.TextSize=11 _t.Parent=_q Instance.new(string.char(85,73,67,111,114,110,101,114),_t).CornerRadius=UDim.new(0,6)local _u=Instance.new(string.char(84,101,120,116,66,117,116,116,111,110))_u.Size=UDim2.new(0,_s,0,26)_u.Position=UDim2.new(0,10+_s+5,0,38)_u.BackgroundColor3=Color3.fromRGB(30,40,30)_u.Text=string.char(83,80,82,73,78,75,76,69,82,83)_u.Font=Enum.Font.GothamBold _u.TextColor3=Color3.fromRGB(255,255,255)_u.TextSize=11 _u.Parent=_q Instance.new(string.char(85,73,67,111,114,110,101,114),_u).CornerRadius=UDim.new(0,6)local _v=Instance.new(string.char(84,101,120,116,66,117,116,116,111,110))_v.Size=UDim2.new(0,_s,0,26)_v.Position=UDim2.new(0,10+(_s*2)+10,0,38)_v.BackgroundColor3=Color3.fromRGB(30,40,30)_v.Text=string.char(87,65,84,69,82,73,78,71,32,67,65,78,83)_v.Font=Enum.Font.GothamBold _v.TextColor3=Color3.fromRGB(255,255,255)_v.TextSize=10 _v.Parent=_q Instance.new(string.char(85,73,67,111,114,110,101,114),_v).CornerRadius=UDim.new(0,6)local _w=Instance.new(string.char(70,114,97,109,101))_w.Size=UDim2.new(1,-20,0,175)_w.Position=UDim2.new(0,10,0,68)_w.BackgroundTransparency=1 _w.Parent=_q local _x=Instance.new(string.char(70,114,97,109,101))_x.Size=UDim2.new(1,-20,0,175)_x.Position=UDim2.new(0,10,0,68)_x.BackgroundTransparency=1 _x.Visible=false _x.Parent=_q local _y=Instance.new(string.char(70,114,97,109,101))_y.Size=UDim2.new(1,-20,0,175)_y.Position=UDim2.new(0,10,0,68)_y.BackgroundTransparency=1 _y.Visible=false _y.Parent=_q local function _z(_A)_t.BackgroundColor3=Color3.fromRGB(30,40,30)_u.BackgroundColor3=Color3.fromRGB(30,40,30)_v.BackgroundColor3=Color3.fromRGB(30,40,30)_w.Visible=false _x.Visible=false _y.Visible=false if _A==string.char(70,114,117,105,116,115)then _t.BackgroundColor3=Color3.fromRGB(50,120,50)_w.Visible=true elseif _A==string.char(83,112,114,105,110,107,108,101,114,115)then _u.BackgroundColor3=Color3.fromRGB(50,120,50)_x.Visible=true elseif _A==string.char(67,97,110,115)then _v.BackgroundColor3=Color3.fromRGB(50,120,50)_y.Visible=true end end _t.MouseButton1Click:Connect(function()_z(string.char(70,114,117,105,116,115))end)_u.MouseButton1Click:Connect(function()_z(string.char(83,112,114,105,110,107,108,101,114,115))end)_v.MouseButton1Click:Connect(function()_z(string.char(67,97,110,115))end)local function _B(_C,_D)local _E=Instance.new(string.char(84,101,120,116,66,117,116,116,111,110))_E.Size=UDim2.new(1,0,0,28)_E.Position=UDim2.new(0,0,0,0)_E.BackgroundColor3=Color3.fromRGB(180,50,50)_E.Text=string.char(65,85,84,79,32,66,85,89,32).._D..string.char(58,32,79,70,70,32,10060)_E.Font=Enum.Font.GothamBold _E.TextColor3=Color3.fromRGB(255,255,255)_E.TextSize=11 _E.Parent=_C Instance.new(string.char(85,73,67,111,114,110,101,114),_E).CornerRadius=UDim.new(0,6)local _F=Instance.new(string.char(84,101,120,116,76,97,98,101,108))_F.Size=UDim2.new(1,0,0,20)_F.Position=UDim2.new(0,0,0,32)_F.BackgroundColor3=Color3.fromRGB(20,25,20)_F.Text=string.char(32,80,105,108,105,104,97,110,58,32,40,66,101,108,117,109,32,97,100,97,41)_F.Font=Enum.Font.GothamSemibold _F.TextColor3=Color3.fromRGB(255,255,255)_F.TextSize=10 _F.TextXAlignment=Enum.TextXAlignment.Left _F.TextTruncate=Enum.TextTruncate.AtEnd _F.Parent=_C Instance.new(string.char(85,73,67,111,114,110,101,114),_F).CornerRadius=UDim.new(0,4)local _H=Instance.new(string.char(83,99,114,111,108,108,105,110,103,70,114,97,109,101))_H.Size=UDim2.new(1,0,0,120)_H.Position=UDim2.new(0,0,0,55)_H.BackgroundColor3=Color3.fromRGB(15,20,15)_H.BorderSizePixel=0 _H.ScrollBarThickness=3 _H.Parent=_C Instance.new(string.char(85,73,67,111,114,110,101,114),_H).CornerRadius=UDim.new(0,6)return _E,_F,_H end local _I,_J,_K=_B(_w,string.char(70,82,85,73,84,83))local _L,_M,_N=_B(_x,string.char(83,80,82,73,78,75,76,69,82,83))local _O,_P,_Q=_B(_y,string.char(87,65,84,69,82,73,78,71,32,67,65,78,83))local _R={}local _S={}local _T={}local function _U(_V,_W)local _X={}for _Y,_Z in pairs(_V)do if _Z then table.insert(_X,_Y)end end _W.Text=#_X>0 andstring.char(32,80,105,108,105,104,97,110,58,32)..table.concat(_X,string.char(44,32))orstring.char(32,80,105,108,105,104,97,110,58,32,40,66,101,108,117,109,32,97,100,97,41)end local function _aa(_ba,_ca,_V,_W)if not _ba then return 0 end local _da=0 local _ea=2 for _fa,_ga in ipairs(_ba:GetChildren())do if _ga.Name~=""then local _ha=Instance.new(string.char(84,101,120,116,66,117,116,116,111,110))_ha.Size=UDim2.new(1,-8,0,24)_ha.Position=UDim2.new(0,4,0,_ea)_ha.BackgroundColor3=Color3.fromRGB(30,45,30)_ha.Text=string.char(91,32,93,32).._ga.Name _ha.Font=Enum.Font.GothamBold _ha.TextColor3=Color3.fromRGB(255,255,255)_ha.TextSize=11 _ha.Parent=_ca Instance.new(string.char(85,73,67,111,114,110,101,114),_ha).CornerRadius=UDim.new(0,4)local _ia=false _ha.MouseButton1Click:Connect(function()_ia=not _ia if _ia then _ha.BackgroundColor3=Color3.fromRGB(50,120,50)_ha.Text=string.char(91,10004,93,32).._ga.Name _V[_ga.Name]=true else _ha.BackgroundColor3=Color3.fromRGB(30,45,30)_ha.Text=string.char(91,32,93,32).._ga.Name _V[_ga.Name]=nil end _U(_V,_W)end)_ea=_ea+28 _da=_da+1 end end _ca.CanvasSize=UDim2.new(0,0,0,_ea+5)return _da end local function _ja(_ka,_ca,_V,_W)local _da=0 local _ea=2 for _fa,_la in ipairs(_ka)do local _ha=Instance.new(string.char(84,101,120,116,66,117,116,116,111,110))_ha.Size=UDim2.new(1,-8,0,24)_ha.Position=UDim2.new(0,4,0,_ea)_ha.BackgroundColor3=Color3.fromRGB(30,45,30)_ha.Text=string.char(91,32,93,32).._la _ha.Font=Enum.Font.GothamBold _ha.TextColor3=Color3.fromRGB(255,255,255)_ha.TextSize=11 _ha.Parent=_ca Instance.new(string.char(85,73,67,111,114,110,101,114),_ha).CornerRadius=UDim.new(0,4)local _ia=false _ha.MouseButton1Click:Connect(function()_ia=not _ia if _ia then _ha.BackgroundColor3=Color3.fromRGB(50,120,50)_ha.Text=string.char(91,10004,93,32).._la _V[_la]=true else _ha.BackgroundColor3=Color3.fromRGB(30,45,30)_ha.Text=string.char(91,32,93,32).._la _V[_la]=nil end _U(_V,_W)end)_ea=_ea+28 _da=_da+1 end _ca.CanvasSize=UDim2.new(0,0,0,_ea+5)return _da end local _ma={string.char(67,111,109,109,111,110,32,83,112,114,105,110,107,108,101,114),string.char(85,110,99,111,109,109,111,110,32,83,112,114,105,110,107,108,101,114),string.char(82,97,114,101,32,83,112,114,105,110,107,108,101,114),string.char(83,117,112,101,114,32,83,112,114,105,110,107,108,101,114),string.char(76,101,103,101,110,100,97,114,121,32,83,112,114,105,110,107,108,101,114)}local _na={string.char(67,111,109,109,111,110,32,87,97,116,101,114,105,110,103,32,67,97,110),string.char(83,117,112,101,114,32,87,97,116,101,114,105,110,103,32,67,97,110)}local _oa=Instance.new(string.char(70,114,97,109,101))_oa.Size=UDim2.new(1,-20,0,80)_oa.Position=UDim2.new(0,10,0,250)_oa.BackgroundColor3=Color3.fromRGB(12,16,12)_oa.BorderSizePixel=0 _oa.Parent=_q Instance.new(string.char(85,73,67,111,114,110,101,114),_oa).CornerRadius=UDim.new(0,6)local _pa=Instance.new(string.char(83,99,114,111,108,108,105,110,103,70,114,97,109,101))_pa.Size=UDim2.new(1,-10,1,-10)_pa.Position=UDim2.new(0,5,0,5)_pa.BackgroundTransparency=1 _pa.BorderSizePixel=0 _pa.ScrollBarThickness=2 _pa.Parent=_oa local _qa=0 local function _ra(_sa,_ta)local _ua=Instance.new(string.char(84,101,120,116,76,97,98,101,108))_ua.Size=UDim2.new(1,0,0,14)_ua.Position=UDim2.new(0,0,0,_qa)_ua.BackgroundTransparency=1 _ua.Text=string.char(62,32).._sa _ua.Font=Enum.Font.Code _ua.TextColor3=_ta or Color3.fromRGB(255,255,255)_ua.TextSize=11 _ua.TextXAlignment=Enum.TextXAlignment.Left _ua.Parent=_pa _qa=_qa+16 _pa.CanvasSize=UDim2.new(0,0,0,_qa)_pa.CanvasPosition=Vector2.new(0,_qa)end pcall(function()local _va=_d:FindFirstChild(string.char(65,115,115,101,116,115))and _d.Assets:FindFirstChild(string.char(70,114,117,105,116,115))local _wa=_aa(_va,_K,_R,_J)local _xa=_ja(_ma,_N,_S,_M)local _ya=_ja(_na,_Q,_T,_P)_ra(string.char(90,104,117,98,32,76,111,97,100,101,100,33,32,73,116,101,109,115,58,32).._wa,Color3.fromRGB(100,255,100))end)local function _za(_ha,_Aa,_Ba)_ha.MouseButton1Click:Connect(function()_Ba.value=not _Ba.value if _Ba.value then _ha.Text=string.char(65,85,84,79,32,66,85,89,32).._Aa..string.char(58,32,79,78,32,9889)_ha.BackgroundColor3=Color3.fromRGB(50,160,80)_ra(string.char(65,117,116,111,32).._Aa..string.char(32,65,107,116,105,102,33),Color3.fromRGB(100,255,100))else _ha.Text=string.char(65,85,84,79,32,66,85,89,32).._Aa..string.char(58,32,79,70,70,32,10060)_ha.BackgroundColor3=Color3.fromRGB(180,50,50)end end)end local _Ca={value=false}local _Da={value=false}local _Ea={value=false}_za(_I,string.char(70,82,85,73,84,83),_Ca)_za(_L,string.char(83,80,82,73,78,75,76,69,82,83),_Da)_za(_O,string.char(87,65,84,69,82,73,78,71,32,67,65,78,83),_Ea)task.spawn(function()while true do task.wait(0.2)if _Ca.value then pcall(function()for _la,_Z in pairs(_R)do if _Z then local _Fa=string.char(#_la)local _Ga=string.char(133,0).._Fa.._la local _Ha={buffer.fromstring(_Ga)}local _Ia=_d:WaitForChild(string.char(83,104,97,114,101,100,77,111,100,117,108,101,115)):WaitForChild(string.char(80,97,99,107,101,116)):WaitForChild(string.char(82,101,109,111,116,101,69,118,101,110,116))_Ia:FireServer(unpack(_Ha))end end end)end end end)task.spawn(function()while true do task.wait(0.5)if _Da.value then pcall(function()for _la,_Z in pairs(_S)do if _Z then local _Fa=string.char(#_la)local _Ga=string.char(133,0).._Fa.._la local _Ha={buffer.fromstring(_Ga)}local _Ia=_d:WaitForChild(string.char(83,104,97,114,101,100,77,111,100,117,108,101,115)):WaitForChild(string.char(80,97,99,107,101,116)):WaitForChild(string.char(82,101,109,111,116,101,69,118,101,110,116))_Ia:FireServer(unpack(_Ha))end end end)end end end)task.spawn(function()while true do task.wait(0.5)if _Ea.value then pcall(function()for _la,_Z in pairs(_T)do if _Z then local _Fa=string.char(#_la)local _Ga=string.char(133,0).._Fa.._la local _Ha={buffer.fromstring(_Ga)}local _Ia=_d:WaitForChild(string.char(83,104,97,114,101,100,77,111,100,117,108,101,115)):WaitForChild(string.char(80,97,99,107,101,116)):WaitForChild(string.char(82,101,109,111,116,101,69,118,101,110,116))_Ia:FireServer(unpack(_Ha))end end end)end end end)local function _Ja()pcall(function()_c.GlobalShadows=false _c.Brightness=2 _c.FogEnd=999999 for _fa,_Ka in pairs(_c:GetDescendants())do if _Ka:IsA(string.char(80,111,115,116,69,102,102,101,99,116))or _Ka:IsA(string.char(83,107,121))or _Ka:IsA(string.char(65,116,109,111,115,112,104,101,114,101))or _Ka:IsA(string.char(67,108,111,117,100,115))then _Ka:Destroy()end end for _fa,_La in pairs(_e:GetDescendants())do if _La:IsA(string.char(80,97,114,116,105,99,108,101,69,109,105,116,116,101,114))or _La:IsA(string.char(84,114,97,105,108))or _La:IsA(string.char(83,109,111,107,101))or _La:IsA(string.char(70,105,114,101))or _La:IsA(string.char(83,112,97,114,107,108,101,115))or _La:IsA(string.char(84,101,120,116,117,114,101))or _La:IsA(string.char(68,101,99,97,108))then _La:Destroy()elseif _La:IsA(string.char(66,97,115,101,80,97,114,116))then _La.Material=Enum.Material.SmoothPlastic _La.Reflectance=0 end end for _fa,_Ma in ipairs(_a:GetPlayers())do if _Ma.Character then for _fa,_Na in ipairs(_Ma.Character:GetDescendants())do if _Na:IsA(string.char(65,99,99,101,115,115,111,114,121))or _Na:IsA(string.char(67,108,111,116,104,105,110,103))or _Na:IsA(string.char(83,104,105,114,116,71,114,97,112,104,105,99))or _Na:IsA(string.char(66,111,100,121,67,111,108,111,114,115))then _Na:Destroy()elseif _Na:IsA(string.char(66,97,115,101,80,97,114,116))then _Na.Material=Enum.Material.SmoothPlastic _Na.Reflectance=0 end end end end local _Oa=_e:FindFirstChild(string.char(71,97,114,100,101,110,115))if _Oa then for _fa,_Pa in pairs(_Oa:GetChildren())do local _Qa=_Pa.Name local _Ra=(_Qa==string.char(80,108,111,116,95).._f.Name)or(_Qa==string.char(80,108,111,116,49))or(_Qa:find(_f.Name))if not _Ra then _Pa:Destroy()else for _fa,_Sa in pairs(_Pa:GetDescendants())do if _Sa:IsA(string.char(66,97,115,101,80,97,114,116))then _Sa.Material=Enum.Material.SmoothPlastic _Sa.Reflectance=0 elseif _Sa:IsA(string.char(84,101,120,116,117,114,101))or _Sa:IsA(string.char(68,101,99,97,108))then _Sa:Destroy()end end end end end end)end local _Ta=false _r.MouseButton1Click:Connect(function()_Ta=not _Ta if _Ta then _r.Text=string.char(85,76,84,73,77,65,84,69,32,66,85,82,73,75,32,77,79,68,69,58,32,79,78,32,9889)_r.BackgroundColor3=Color3.fromRGB(50,160,80)_Ja()_ra(string.char(85,108,116,105,109,97,116,101,32,66,117,114,105,107,32,38,32,67,104,97,114,97,99,116,101,114,32,83,116,114,105,112,112,101,100,32,65,107,116,105,102,33),Color3.fromRGB(100,255,100))else _r.Text=string.char(85,76,84,73,77,65,84,69,32,66,85,82,73,75,32,77,79,68,69,58,32,79,70,70,32,10060)_r.BackgroundColor3=Color3.fromRGB(180,50,50)_ra(string.char(77,111,100,101,32,66,117,114,105,107,32,68,105,109,97,116,105,107,97,110,46),Color3.fromRGB(255,200,100))end end)task.spawn(function()task.wait(2)_Ta=true _r.Text=string.char(85,76,84,73,77,65,84,69,32,66,85,82,73,75,32,77,79,68,69,58,32,79,78,32,9889)_r.BackgroundColor3=Color3.fromRGB(50,160,80)applyUltimateB
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local Lighting = game:GetService("Lighting")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace = game:GetService("Workspace")
+
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+local guiName = "Zhub_GardenOpt_Resizable"
+
+if PlayerGui:FindFirstChild(guiName) then
+    PlayerGui[guiName]:Destroy()
+end
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = guiName
+ScreenGui.ResetOnSpawn = false
+ScreenGui.DisplayOrder = 2000000000
+ScreenGui.Parent = PlayerGui
+
+-- MAIN FRAME
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.Size = UDim2.new(0, 420, 0, 400)
+MainFrame.Position = UDim2.new(0.5, -210, 0.5, -200)
+MainFrame.BackgroundColor3 = Color3.fromRGB(18, 22, 18)
+MainFrame.BorderSizePixel = 0
+MainFrame.Active = true
+MainFrame.Parent = ScreenGui
+Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 10)
+
+local UIStrokeMain = Instance.new("UIStroke")
+UIStrokeMain.Color = Color3.fromRGB(80, 200, 100)
+UIStrokeMain.Thickness = 2
+UIStrokeMain.Parent = MainFrame
+
+-- TOPBAR (UNTUK DRAG / GESER)
+local Topbar = Instance.new("Frame")
+Topbar.Size = UDim2.new(1, 0, 0, 40)
+Topbar.BackgroundColor3 = Color3.fromRGB(25, 32, 25)
+Topbar.BorderSizePixel = 0
+Topbar.Parent = MainFrame
+Instance.new("UICorner", Topbar).CornerRadius = UDim.new(0, 10)
+
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, -90, 1, 0)
+Title.Position = UDim2.new(0, 15, 0, 0)
+Title.BackgroundTransparency = 1
+Title.Text = "Zhub | Master Garden (Resizable & Safe)"
+Title.Font = Enum.Font.GothamBlack
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextSize = 11
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.Parent = Topbar
+
+-- DRAG SYSTEM MANUAL UNTUK TOPBAR
+local dragging, dragInput, dragStart, startPos
+Topbar.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = MainFrame.Position
+        
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+Topbar.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        dragInput = input
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        local delta = input.Position - dragStart
+        MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+-- RESIZE HANDLE (PADA POJOK KANAN BAWAH)
+local ResizeBtn = Instance.new("TextButton")
+ResizeBtn.Size = UDim2.new(0, 18, 0, 18)
+ResizeBtn.Position = UDim2.new(1, -18, 1, -18)
+ResizeBtn.BackgroundTransparency = 1
+ResizeBtn.Text = "◢"
+ResizeBtn.Font = Enum.Font.GothamBold
+ResizeBtn.TextColor3 = Color3.fromRGB(150, 150, 150)
+ResizeBtn.TextSize = 12
+ResizeBtn.Parent = MainFrame
+
+local resizing = false
+local resizeStart, startSize
+
+ResizeBtn.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        resizing = true
+        resizeStart = input.Position
+        startSize = MainFrame.AbsoluteSize
+        
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                resizing = false
+            end
+        end)
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if resizing and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        local delta = input.Position - resizeStart
+        local newWidth = math.clamp(startSize.X + delta.X, 320, 800)
+        local newHeight = math.clamp(startSize.Y + delta.Y, 300, 600)
+        MainFrame.Size = UDim2.new(0, newWidth, 0, newHeight)
+    end
+end)
+
+-- CLOSE BUTTON
+local CloseBtn = Instance.new("TextButton")
+CloseBtn.Size = UDim2.new(0, 26, 0, 26)
+CloseBtn.Position = UDim2.new(1, -32, 0, 7)
+CloseBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+CloseBtn.Text = "X"
+CloseBtn.Font = Enum.Font.GothamBold
+CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseBtn.Parent = Topbar
+Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 6)
+CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
+
+-- MINIMIZE / RESTORE BUTTON
+local isMinimized = false
+local MinBtn = Instance.new("TextButton")
+MinBtn.Size = UDim2.new(0, 26, 0, 26)
+MinBtn.Position = UDim2.new(1, -64, 0, 7)
+MinBtn.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+MinBtn.Text = "-"
+MinBtn.Font = Enum.Font.GothamBold
+MinBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+MinBtn.Parent = Topbar
+Instance.new("UICorner", MinBtn).CornerRadius = UDim.new(0, 6)
+
+-- CONTAINER UTAMA
+local Container = Instance.new("Frame")
+Container.Size = UDim2.new(1, 0, 1, -40)
+Container.Position = UDim2.new(0, 0, 0, 40)
+Container.BackgroundTransparency = 1
+Container.Parent = MainFrame
+
+MinBtn.MouseButton1Click:Connect(function()
+    isMinimized = not isMinimized
+    Container.Visible = not isMinimized
+    if isMinimized then
+        MainFrame.Size = UDim2.new(0, MainFrame.AbsoluteSize.X, 0, 40)
+        MinBtn.Text = "+"
+    else
+        MainFrame.Size = UDim2.new(0, MainFrame.AbsoluteSize.X, 0, 400)
+        MinBtn.Text = "-"
+    end
+end)
+
+-- BURIK MODE (Y = 5)
+local BtnOpt = Instance.new("TextButton")
+BtnOpt.Size = UDim2.new(1, -20, 0, 26)
+BtnOpt.Position = UDim2.new(0, 10, 0, 5)
+BtnOpt.BackgroundColor3 = Color3.fromRGB(180, 50, 50)
+BtnOpt.Text = "ULTIMATE BURIK MODE: OFF ❌"
+BtnOpt.Font = Enum.Font.GothamBold
+BtnOpt.TextColor3 = Color3.fromRGB(255, 255, 255)
+BtnOpt.TextSize = 11
+BtnOpt.Parent = Container
+Instance.new("UICorner", BtnOpt).CornerRadius = UDim.new(0, 6)
+
+-- TAB BUTTONS (Y = 38)
+local TabWidth = (400 / 3) - 4
+local TabFruits = Instance.new("TextButton")
+TabFruits.Size = UDim2.new(0, TabWidth, 0, 26)
+TabFruits.Position = UDim2.new(0, 10, 0, 38)
+TabFruits.BackgroundColor3 = Color3.fromRGB(50, 120, 50)
+TabFruits.Text = "FRUITS"
+TabFruits.Font = Enum.Font.GothamBold
+TabFruits.TextColor3 = Color3.fromRGB(255, 255, 255)
+TabFruits.TextSize = 11
+TabFruits.Parent = Container
+Instance.new("UICorner", TabFruits).CornerRadius = UDim.new(0, 6)
+
+local TabSprinklers = Instance.new("TextButton")
+TabSprinklers.Size = UDim2.new(0, TabWidth, 0, 26)
+TabSprinklers.Position = UDim2.new(0, 10 + TabWidth + 5, 0, 38)
+TabSprinklers.BackgroundColor3 = Color3.fromRGB(30, 40, 30)
+TabSprinklers.Text = "SPRINKLERS"
+TabSprinklers.Font = Enum.Font.GothamBold
+TabSprinklers.TextColor3 = Color3.fromRGB(255, 255, 255)
+TabSprinklers.TextSize = 11
+TabSprinklers.Parent = Container
+Instance.new("UICorner", TabSprinklers).CornerRadius = UDim.new(0, 6)
+
+local TabCans = Instance.new("TextButton")
+TabCans.Size = UDim2.new(0, TabWidth, 0, 26)
+TabCans.Position = UDim2.new(0, 10 + (TabWidth * 2) + 10, 0, 38)
+TabCans.BackgroundColor3 = Color3.fromRGB(30, 40, 30)
+TabCans.Text = "WATERING CANS"
+TabCans.Font = Enum.Font.GothamBold
+TabCans.TextColor3 = Color3.fromRGB(255, 255, 255)
+TabCans.TextSize = 10
+TabCans.Parent = Container
+Instance.new("UICorner", TabCans).CornerRadius = UDim.new(0, 6)
+
+-- PAGE CONTAINERS (Y = 68)
+local PageFruits = Instance.new("Frame")
+PageFruits.Size = UDim2.new(1, -20, 0, 175)
+PageFruits.Position = UDim2.new(0, 10, 0, 68)
+PageFruits.BackgroundTransparency = 1
+PageFruits.Parent = Container
+
+local PageSprinklers = Instance.new("Frame")
+PageSprinklers.Size = UDim2.new(1, -20, 0, 175)
+PageSprinklers.Position = UDim2.new(0, 10, 0, 68)
+PageSprinklers.BackgroundTransparency = 1
+PageSprinklers.Visible = false
+PageSprinklers.Parent = Container
+
+local PageCans = Instance.new("Frame")
+PageCans.Size = UDim2.new(1, -20, 0, 175)
+PageCans.Position = UDim2.new(0, 10, 0, 68)
+PageCans.BackgroundTransparency = 1
+PageCans.Visible = false
+PageCans.Parent = Container
+
+local function switchTab(tabName)
+    TabFruits.BackgroundColor3 = Color3.fromRGB(30, 40, 30)
+    TabSprinklers.BackgroundColor3 = Color3.fromRGB(30, 40, 30)
+    TabCans.BackgroundColor3 = Color3.fromRGB(30, 40, 30)
+    
+    PageFruits.Visible = false
+    PageSprinklers.Visible = false
+    PageCans.Visible = false
+    
+    if tabName == "Fruits" then
+        TabFruits.BackgroundColor3 = Color3.fromRGB(50, 120, 50)
+        PageFruits.Visible = true
+    elseif tabName == "Sprinklers" then
+        TabSprinklers.BackgroundColor3 = Color3.fromRGB(50, 120, 50)
+        PageSprinklers.Visible = true
+    elseif tabName == "Cans" then
+        TabCans.BackgroundColor3 = Color3.fromRGB(50, 120, 50)
+        PageCans.Visible = true
+    end
+end
+
+TabFruits.MouseButton1Click:Connect(function() switchTab("Fruits") end)
+TabSprinklers.MouseButton1Click:Connect(function() switchTab("Sprinklers") end)
+TabCans.MouseButton1Click:Connect(function() switchTab("Cans") end)
+
+local function buildPage(pageFrame, toggleName)
+    local ToggleBtn = Instance.new("TextButton")
+    ToggleBtn.Size = UDim2.new(1, 0, 0, 28)
+    ToggleBtn.Position = UDim2.new(0, 0, 0, 0)
+    ToggleBtn.BackgroundColor3 = Color3.fromRGB(180, 50, 50)
+    ToggleBtn.Text = "AUTO BUY " .. toggleName .. ": OFF ❌"
+    ToggleBtn.Font = Enum.Font.GothamBold
+    ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    ToggleBtn.TextSize = 11
+    ToggleBtn.Parent = pageFrame
+    Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(0, 6)
+    
+    local StatusText = Instance.new("TextLabel")
+    StatusText.Size = UDim2.new(1, 0, 0, 20)
+    StatusText.Position = UDim2.new(0, 0, 0, 32)
+    StatusText.BackgroundColor3 = Color3.fromRGB(20, 25, 20)
+    StatusText.Text = " Pilihan: (Belum ada)"
+    StatusText.Font = Enum.Font.GothamSemibold
+    StatusText.TextColor3 = Color3.fromRGB(255, 255, 255)
+    StatusText.TextSize = 10
+    StatusText.TextXAlignment = Enum.TextXAlignment.Left
+    StatusText.TextTruncate = Enum.TextTruncate.AtEnd
+    StatusText.Parent = pageFrame
+    Instance.new("UICorner", StatusText).CornerRadius = UDim.new(0, 4)
+    
+    local ScrollList = Instance.new("ScrollingFrame")
+    ScrollList.Size = UDim2.new(1, 0, 0, 120)
+    ScrollList.Position = UDim2.new(0, 0, 0, 55)
+    ScrollList.BackgroundColor3 = Color3.fromRGB(15, 20, 15)
+    ScrollList.BorderSizePixel = 0
+    ScrollList.ScrollBarThickness = 3
+    ScrollList.Parent = pageFrame
+    Instance.new("UICorner", ScrollList).CornerRadius = UDim.new(0, 6)
+    
+    return ToggleBtn, StatusText, ScrollList
+end
+
+local ToggleF, StatusF, ScrollF = buildPage(PageFruits, "FRUITS")
+local ToggleS, StatusS, ScrollS = buildPage(PageSprinklers, "SPRINKLERS")
+local ToggleC, StatusC, ScrollC = buildPage(PageCans, "WATERING CANS")
+
+local selectedFruits = {}
+local selectedSprinklers = {}
+local selectedCans = {}
+
+local function refreshStatus(selectionTable, statusLabel)
+    local list = {}
+    for name, active in pairs(selectionTable) do
+        if active then table.insert(list, name) end
+    end
+    statusLabel.Text = #list > 0 and " Pilihan: " .. table.concat(list, ", ") or " Pilihan: (Belum ada)"
+end
+
+local function populateListScanned(folder, scrollFrame, selectionTable, statusLabel)
+    if not folder then return 0 end
+    local count = 0
+    local currentY = 2
+    for _, child in ipairs(folder:GetChildren()) do
+        if child.Name ~= "" then
+            local btn = Instance.new("TextButton")
+            btn.Size = UDim2.new(1, -8, 0, 24)
+            btn.Position = UDim2.new(0, 4, 0, currentY)
+            btn.BackgroundColor3 = Color3.fromRGB(30, 45, 30)
+            btn.Text = "[ ] " .. child.Name
+            btn.Font = Enum.Font.GothamBold
+            btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+            btn.TextSize = 11
+            btn.Parent = scrollFrame
+            Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 4)
+            
+            local isSelected = false
+            btn.MouseButton1Click:Connect(function()
+                isSelected = not isSelected
+                if isSelected then
+                    btn.BackgroundColor3 = Color3.fromRGB(50, 120, 50)
+                    btn.Text = "[✔] " .. child.Name
+                    selectionTable[child.Name] = true
+                else
+                    btn.BackgroundColor3 = Color3.fromRGB(30, 45, 30)
+                    btn.Text = "[ ] " .. child.Name
+                    selectionTable[child.Name] = nil
+                end
+                refreshStatus(selectionTable, statusLabel)
+            end)
+            
+            currentY = currentY + 28
+            count = count + 1
+        end
+    end
+    scrollFrame.CanvasSize = UDim2.new(0, 0, 0, currentY + 5)
+    return count
+end
+
+local function populateListPermanent(itemTable, scrollFrame, selectionTable, statusLabel)
+    local count = 0
+    local currentY = 2
+    for _, itemName in ipairs(itemTable) do
+        local btn = Instance.new("TextButton")
+        btn.Size = UDim2.new(1, -8, 0, 24)
+        btn.Position = UDim2.new(0, 4, 0, currentY)
+        btn.BackgroundColor3 = Color3.fromRGB(30, 45, 30)
+        btn.Text = "[ ] " .. itemName
+        btn.Font = Enum.Font.GothamBold
+        btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+        btn.TextSize = 11
+        btn.Parent = scrollFrame
+        Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 4)
+        
+        local isSelected = false
+        btn.MouseButton1Click:Connect(function()
+            isSelected = not isSelected
+            if isSelected then
+                btn.BackgroundColor3 = Color3.fromRGB(50, 120, 50)
+                btn.Text = "[✔] " .. itemName
+                selectionTable[itemName] = true
+            else
+                btn.BackgroundColor3 = Color3.fromRGB(30, 45, 30)
+                btn.Text = "[ ] " .. itemName
+                selectionTable[itemName] = nil
+            end
+            refreshStatus(selectionTable, statusLabel)
+        end)
+        
+        currentY = currentY + 28
+        count = count + 1
+    end
+    scrollFrame.CanvasSize = UDim2.new(0, 0, 0, currentY + 5)
+    return count
+end
+
+local PERMANENT_SPRINKLERS = {
+    "Common Sprinkler",
+    "Uncommon Sprinkler",
+    "Rare Sprinkler",
+    "Super Sprinkler",
+    "Legendary Sprinkler"
+}
+
+local PERMANENT_CANS = {
+    "Common Watering Can",
+    "Super Watering Can"
+}
+
+-- LOG AREA
+local LogFrame = Instance.new("Frame")
+LogFrame.Size = UDim2.new(1, -20, 0, 80)
+LogFrame.Position = UDim2.new(0, 10, 0, 250)
+LogFrame.BackgroundColor3 = Color3.fromRGB(12, 16, 12)
+LogFrame.BorderSizePixel = 0
+LogFrame.Parent = Container
+Instance.new("UICorner", LogFrame).CornerRadius = UDim.new(0, 6)
+
+local ScrollingLog = Instance.new("ScrollingFrame")
+ScrollingLog.Size = UDim2.new(1, -10, 1, -10)
+ScrollingLog.Position = UDim2.new(0, 5, 0, 5)
+ScrollingLog.BackgroundTransparency = 1
+ScrollingLog.BorderSizePixel = 0
+ScrollingLog.ScrollBarThickness = 2
+ScrollingLog.Parent = LogFrame
+
+local logY = 0
+local function addLog(text, color)
+    local newLog = Instance.new("TextLabel")
+    newLog.Size = UDim2.new(1, 0, 0, 14)
+    newLog.Position = UDim2.new(0, 0, 0, logY)
+    newLog.BackgroundTransparency = 1
+    newLog.Text = "> " .. text
+    newLog.Font = Enum.Font.Code
+    newLog.TextColor3 = color or Color3.fromRGB(255, 255, 255)
+    newLog.TextSize = 11
+    newLog.TextXAlignment = Enum.TextXAlignment.Left
+    newLog.Parent = ScrollingLog
+    
+    logY = logY + 16
+    ScrollingLog.CanvasSize = UDim2.new(0, 0, 0, logY)
+    ScrollingLog.CanvasPosition = Vector2.new(0, logY)
+end
+
+pcall(function()
+    local fFruits = ReplicatedStorage:FindFirstChild("Assets") and ReplicatedStorage.Assets:FindFirstChild("Fruits")
+    local cFruits = populateListScanned(fFruits, ScrollF, selectedFruits, StatusF)
+    
+    local cSprinklers = populateListPermanent(PERMANENT_SPRINKLERS, ScrollS, selectedSprinklers, StatusS)
+    local cCans = populateListPermanent(PERMANENT_CANS, ScrollC, selectedCans, StatusC)
+    
+    addLog("Zhub Pro Loaded! Items: "..cFruits, Color3.fromRGB(100, 255, 100))
+end)
+
+local function setupToggle(btn, logName, stateVar)
+    btn.MouseButton1Click:Connect(function()
+        stateVar.value = not stateVar.value
+        if stateVar.value then
+            btn.Text = "AUTO BUY " .. logName .. ": ON ⚡"
+            btn.BackgroundColor3 = Color3.fromRGB(50, 160, 80)
+            addLog("Auto " .. logName .. " Aktif!", Color3.fromRGB(100, 255, 100))
+        else
+            btn.Text = "AUTO BUY " .. logName .. ": OFF ❌"
+            btn.BackgroundColor3 = Color3.fromRGB(180, 50, 50)
+        end
+    end)
+end
+
+local sFruits = {value = false}
+local sSprinklers = {value = false}
+local sCans = {value = false}
+
+setupToggle(ToggleF, "FRUITS", sFruits)
+setupToggle(ToggleS, "SPRINKLERS", sSprinklers)
+setupToggle(ToggleC, "WATERING CANS", sCans)
+
+-- AUTO BUY PACKET LOOP
+task.spawn(function()
+    while true do
+        task.wait(0.2)
+        if sFruits.value then
+            pcall(function()
+                for itemName, active in pairs(selectedFruits) do
+                    if active then
+                        local lenChar = string.char(#itemName)
+                        local packetString = "\133\000" .. lenChar .. itemName
+                        local args = { buffer.fromstring(packetString) }
+                        local remote = ReplicatedStorage:WaitForChild("SharedModules"):WaitForChild("Packet"):WaitForChild("RemoteEvent")
+                        remote:FireServer(unpack(args))
+                    end
+                end
+            end)
+        end
+    end
+end)
+
+task.spawn(function()
+    while true do
+        task.wait(0.5)
+        if sSprinklers.value then
+            pcall(function()
+                for itemName, active in pairs(selectedSprinklers) do
+                    if active then
+                        local lenChar = string.char(#itemName)
+                        local packetString = "\133\000" .. lenChar .. itemName
+                        local args = { buffer.fromstring(packetString) }
+                        local remote = ReplicatedStorage:WaitForChild("SharedModules"):WaitForChild("Packet"):WaitForChild("RemoteEvent")
+                        remote:FireServer(unpack(args))
+                    end
+                end
+            end)
+        end
+    end
+end)
+
+task.spawn(function()
+    while true do
+        task.wait(0.5)
+        if sCans.value then
+            pcall(function()
+                for itemName, active in pairs(selectedCans) do
+                    if active then
+                        local lenChar = string.char(#itemName)
+                        local packetString = "\133\000" .. lenChar .. itemName
+                        local args = { buffer.fromstring(packetString) }
+                        local remote = ReplicatedStorage:WaitForChild("SharedModules"):WaitForChild("Packet"):WaitForChild("RemoteEvent")
+                        remote:FireServer(unpack(args))
+                    end
+                end
+            end)
+        end
+    end
+end)
+
+-- BURIK GACOR (TANAH / NAPAK AMAN)
+local function applyUltimateBurik()
+    pcall(function()
+        Lighting.GlobalShadows = false
+        Lighting.Brightness = 2
+        Lighting.FogEnd = 999999
+        for _, v in pairs(Lighting:GetDescendants()) do
+            if v:IsA("PostEffect") or v:IsA("Sky") or v:IsA("Atmosphere") or v:IsA("Clouds") then v:Destroy() end
+        end
+        
+        for _, obj in pairs(Workspace:GetDescendants()) do
+            local nameLower = string.lower(obj.Name)
+            local isGround = (nameLower:find("baseplate") or nameLower:find("terrain") or nameLower:find("floor") or nameLower:find("ground") or nameLower:find("land"))
+            
+            if not isGround then
+                if obj:IsA("ParticleEmitter") or obj:IsA("Trail") or obj:IsA("Smoke") or obj:IsA("Fire") or obj:IsA("Sparkles") or obj:IsA("Texture") or obj:IsA("Decal") then 
+                    obj:Destroy() 
+                elseif obj:IsA("BasePart") then
+                    obj.Material = Enum.Material.SmoothPlastic
+                    obj.Reflectance = 0
+                end
+            else
+                if obj:IsA("Texture") or obj:IsA("Decal") then
+                    obj:Destroy()
+                elseif obj:IsA("BasePart") then
+                    obj.Material = Enum.Material.SmoothPlastic
+                end
+            end
+        end
+        
+        for _, p in ipairs(Players:GetPlayers()) do
+            if p.Character then
+                for _, item in ipairs(p.Character:GetDescendants()) do
+                    if item:IsA("Accessory") or item:IsA("Clothing") or item:IsA("ShirtGraphic") or item:IsA("BodyColors") then
+                        item:Destroy()
+                    elseif item:IsA("BasePart") then
+                        item.Material = Enum.Material.SmoothPlastic
+                        item.Reflectance = 0
+                    end
+                end
+            end
+        end
+        
+        local gardensFolder = Workspace:FindFirstChild("Gardens")
+        if gardensFolder then
+            for _, plot in pairs(gardensFolder:GetChildren()) do
+                local plotName = plot.Name
+                local isMyPlot = (plotName == "Plot_" .. LocalPlayer.Name) or (plotName == "Plot1") or (plotName:find(LocalPlayer.Name))
+                
+                if not isMyPlot then
+                    plot:Destroy()
+                else
+                    for _, pPart in pairs(plot:GetDescendants()) do
+                        if pPart:IsA("BasePart") then 
+                            pPart.Material = Enum.Material.SmoothPlastic 
+                            pPart.Reflectance = 0
+                        elseif pPart:IsA("Texture") or pPart:IsA("Decal") then 
+                            pPart:Destroy() 
+                        end
+                    end
+                end
+            end
+        end
+    end)
+end
+
+local isOptimized = false
+BtnOpt.MouseButton1Click:Connect(function()
+    isOptimized = not isOptimized
+    if isOptimized then
+        BtnOpt.Text = "ULTIMATE BURIK MODE: ON ⚡"
+        BtnOpt.BackgroundColor3 = Color3.fromRGB(50, 160, 80)
+        applyUltimateBurik()
+        addLog("Burik Gacor Aktif (Tanah Aman)!", Color3.fromRGB(100, 255, 100))
+    else
+        BtnOpt.Text = "ULTIMATE BURIK MODE: OFF ❌"
+        BtnOpt.BackgroundColor3 = Color3.fromRGB(180, 50, 50)
+        addLog("Mode Burik Dimatikan.", Color3.fromRGB(255, 200, 100))
+    end
+end)
+
+task.spawn(function()
+    task.wait(2)
+    isOptimized = true
+    BtnOpt.Text = "ULTIMATE BURIK MODE: ON ⚡"
+    BtnOpt.BackgroundColor3 = Color3.fromRGB(50, 160, 80)
+    applyUltimateBurik()
+    addLog("Auto-Applied Performance Boost!", Color3.fromRGB(100, 255, 100))
+end)
