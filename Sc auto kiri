@@ -1,614 +1,331 @@
+                   -- ========================================================
+-- ZHUB FPS DROP PERFORMANCE
+-- ========================================================
+
 local Players = game:GetService("Players")
-local UserInputService = game:GetService("UserInputService")
-local Lighting = game:GetService("Lighting")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
-
+local Lighting = game:GetService("Lighting")
+local RunService = game:GetService("RunService")
+local StarterGui = game:GetService("StarterGui")
+local TweenService = game:GetService("TweenService")
 local LocalPlayer = Players.LocalPlayer
-local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
-local guiName = "Zhub_GardenOpt_Resizable"
 
-if PlayerGui:FindFirstChild(guiName) then
-    PlayerGui[guiName]:Destroy()
+local OriginalAmbient = Lighting.Ambient
+local OriginalOutdoorAmbient = Lighting.OutdoorAmbient
+local OriginalBrightness = Lighting.Brightness
+local OriginalShadows = Lighting.GlobalShadows
+
+local VulkanActive = false
+local DescendantConnection = nil
+local PlayerConnection = nil
+
+-- FUNGSI NOTIFIKASI LOG KHUSUS
+local function notifyLog(titleText, descText)
+    pcall(function()
+        StarterGui:SetCore("SendNotification", {
+            Title = titleText,
+            Text = descText,
+            Duration = 6
+        })
+    end)
+end
+
+-- 1. STRIP PLAYER (Hapus Baju & Aksesoris)
+local function stripCharacter(char)
+    if not char or not VulkanActive then return end
+    for _, item in pairs(char:GetChildren()) do
+        if item:IsA("Shirt") or item:IsA("Pants") or item:IsA("ShirtGraphic") or item:IsA("Accessory") then
+            item:Destroy()
+        elseif item:IsA("Head") then
+            for _, h in pairs(item:GetChildren()) do
+                if h:IsA("Decal") then h:Destroy() end
+            end
+        end
+    end
+    for _, part in pairs(char:GetChildren()) do
+        if part:IsA("BasePart") then
+            part.Material = Enum.Material.SmoothPlastic
+            part.Color = Color3.fromRGB(240, 240, 240)
+        end
+    end
+end
+
+-- 2. FILTER OBJEK & PLOT
+local function processObject(obj)
+    if not VulkanActive then return end
+
+    if obj:IsA("Decal") or obj:IsA("Texture") then
+        obj:Destroy()
+        return
+    end
+
+    local objName = obj.Name:lower()
+
+    if objName:find("baseplate") or objName:find("ground") or objName:find("terrain") or obj:IsA("Terrain") then
+        if obj:IsA("BasePart") then
+            obj.Material = Enum.Material.SmoothPlastic
+            obj.Color = Color3.fromRGB(245, 245, 245)
+        end
+        return
+    end
+
+    if objName:find("plot") or objName:find("base") then
+        local isSafePlot = false
+
+        if objName:find("plot1") or objName:find("plot 1") or objName == "1" then
+            isSafePlot = true
+        elseif obj:FindFirstChild("Owner") and tostring(obj.Owner.Value) == LocalPlayer.Name then
+            isSafePlot = true
+        elseif objName:find(LocalPlayer.Name:lower()) then
+            isSafePlot = true
+        end
+
+        if not isSafePlot then
+            obj:Destroy()
+            return
+        end
+    end
+
+    if obj:IsA("BasePart") then
+        obj.Material = Enum.Material.SmoothPlastic
+        obj.Color = Color3.fromRGB(255, 255, 255)
+        obj.Reflectance = 0
+    end
+end
+
+-- 3. TOGGLE SYSTEM
+local function enableVulkan()
+    VulkanActive = true
+    
+    Lighting.GlobalShadows = false
+    Lighting.Brightness = 2
+    Lighting.Ambient = Color3.fromRGB(255, 255, 255)
+    Lighting.OutdoorAmbient = Color3.fromRGB(255, 255, 255)
+
+    for _, v in pairs(Workspace:GetDescendants()) do processObject(v) end
+    for _, p in pairs(Players:GetPlayers()) do
+        if p.Character then stripCharacter(p.Character) end
+    end
+
+    DescendantConnection = Workspace.DescendantAdded:Connect(processObject)
+    PlayerConnection = Players.PlayerAdded:Connect(function(p)
+        p.CharacterAdded:Connect(stripCharacter)
+    end)
+
+    notifyLog(
+        "ZHUB SYSTEM ⚡", 
+        "Zhub Mode: ON aktif! HP adem siap AFK seharian, jangan Nolep melulu ya bro! 🥔🔥\n\nSalam, Thaizardooo"
+    )
+end
+
+local function disableVulkan()
+    VulkanActive = false
+    
+    if DescendantConnection then DescendantConnection:Disconnect() end
+    if PlayerConnection then PlayerConnection:Disconnect() end
+
+    Lighting.GlobalShadows = OriginalShadows
+    Lighting.Brightness = OriginalBrightness
+    Lighting.Ambient = OriginalAmbient
+    Lighting.OutdoorAmbient = OriginalOutdoorAmbient
+
+    notifyLog(
+        "ZHUB SYSTEM 🌿", 
+        "Zhub Mode: OFF! Anjay akhirnya lu hirup udara segar, Rejoin game kalo mau balikin semua ke asal ya! 🚪💨\n\nSalam, Thaizardooo"
+    )
+end
+
+-- 4. INTRO ANIMATION & GUI BUILDER
+local ParentTarget = LocalPlayer:WaitForChild("PlayerGui")
+if ParentTarget:FindFirstChild("ZhubVulkanGui") then
+    ParentTarget.ZhubVulkanGui:Destroy()
 end
 
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = guiName
+ScreenGui.Name = "ZhubVulkanGui"
 ScreenGui.ResetOnSpawn = false
-ScreenGui.DisplayOrder = 2000000000
-ScreenGui.Parent = PlayerGui
+ScreenGui.Parent = ParentTarget
 
--- MAIN FRAME
+-- ========================================================
+-- INTRO FRAME (ZARSHUB)
+-- ========================================================
+local IntroFrame = Instance.new("Frame")
+IntroFrame.Name = "IntroFrame"
+IntroFrame.Parent = ScreenGui
+IntroFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+IntroFrame.BackgroundTransparency = 1
+IntroFrame.Size = UDim2.new(1, 0, 1, 0)
+IntroFrame.ZIndex = 10
+
+local IntroTitle = Instance.new("TextLabel")
+IntroTitle.Parent = IntroFrame
+IntroTitle.BackgroundTransparency = 1
+IntroTitle.Position = UDim2.new(0.5, -150, 0.4, -25)
+IntroTitle.Size = UDim2.new(0, 300, 0, 50)
+IntroTitle.Font = Enum.Font.GothamBold
+IntroTitle.Text = ""
+IntroTitle.TextColor3 = Color3.fromRGB(0, 255, 150)
+IntroTitle.TextSize = 40
+IntroTitle.ZIndex = 11
+
+local IntroSub = Instance.new("TextLabel")
+IntroSub.Parent = IntroFrame
+IntroSub.BackgroundTransparency = 1
+IntroSub.Position = UDim2.new(0.5, -150, 0.5, 5)
+IntroSub.Size = UDim2.new(0, 300, 0, 20)
+IntroSub.Font = Enum.Font.SourceSansItalic
+IntroSub.Text = "Initializing Performance Mode..."
+IntroSub.TextColor3 = Color3.fromRGB(180, 180, 180)
+IntroSub.TextTransparency = 1
+IntroSub.TextSize = 14
+IntroSub.ZIndex = 11
+
+local BarBackground = Instance.new("Frame")
+BarBackground.Parent = IntroFrame
+BarBackground.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+BarBackground.Position = UDim2.new(0.5, -100, 0.56, 0)
+BarBackground.Size = UDim2.new(0, 200, 0, 4)
+BarBackground.BackgroundTransparency = 1
+BarBackground.ZIndex = 11
+
+local BarFill = Instance.new("Frame")
+BarFill.Parent = BarBackground
+BarFill.BackgroundColor3 = Color3.fromRGB(0, 255, 150)
+BarFill.Size = UDim2.new(0, 0, 1, 0)
+BarFill.ZIndex = 12
+
+-- UI MAIN FRAME
 local MainFrame = Instance.new("Frame")
-MainFrame.Name = "MainFrame"
-MainFrame.Size = UDim2.new(0, 420, 0, 400)
-MainFrame.Position = UDim2.new(0.5, -210, 0.5, -200)
-MainFrame.BackgroundColor3 = Color3.fromRGB(18, 22, 18)
-MainFrame.BorderSizePixel = 0
-MainFrame.Active = true
-MainFrame.Parent = ScreenGui
-Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 10)
-
-local UIStrokeMain = Instance.new("UIStroke")
-UIStrokeMain.Color = Color3.fromRGB(80, 200, 100)
-UIStrokeMain.Thickness = 2
-UIStrokeMain.Parent = MainFrame
-
--- TOPBAR (UNTUK DRAG / GESER)
-local Topbar = Instance.new("Frame")
-Topbar.Size = UDim2.new(1, 0, 0, 40)
-Topbar.BackgroundColor3 = Color3.fromRGB(25, 32, 25)
-Topbar.BorderSizePixel = 0
-Topbar.Parent = MainFrame
-Instance.new("UICorner", Topbar).CornerRadius = UDim.new(0, 10)
-
 local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(1, -90, 1, 0)
-Title.Position = UDim2.new(0, 15, 0, 0)
-Title.BackgroundTransparency = 1
-Title.Text = "Zhub | Master Garden (Resizable & Safe)"
-Title.Font = Enum.Font.GothamBlack
-Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-Title.TextSize = 11
-Title.TextXAlignment = Enum.TextXAlignment.Left
-Title.Parent = Topbar
+local FpsLabel = Instance.new("TextLabel")
+local AfkLabel = Instance.new("TextLabel")
+local ToggleBtn = Instance.new("TextButton")
+local UICorner1 = Instance.new("UICorner")
+local UICorner2 = Instance.new("UICorner")
 
--- DRAG SYSTEM MANUAL UNTUK TOPBAR
-local dragging, dragInput, dragStart, startPos
-Topbar.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        dragging = true
-        dragStart = input.Position
-        startPos = MainFrame.Position
-        
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then
-                dragging = false
-            end
-        end)
-    end
-end)
+MainFrame.Name = "MainFrame"
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+MainFrame.Position = UDim2.new(0.05, 0, 0.35, 0)
+MainFrame.Size = UDim2.new(0, 210, 0, 140)
+MainFrame.Active = true
+MainFrame.Draggable = true
+MainFrame.Visible = false
+UICorner1.CornerRadius = UDim.new(0, 6)
+UICorner1.Parent = MainFrame
 
-Topbar.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-        dragInput = input
-    end
-end)
+Title.Name = "Title"
+Title.Parent = MainFrame
+Title.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+Title.Size = UDim2.new(1, 0, 0, 28)
+Title.Font = Enum.Font.SourceSansBold
+Title.Text = "ZHUB FPS DROP PERFORMANCE"
+Title.TextColor3 = Color3.fromRGB(0, 255, 150)
+Title.TextSize = 11.000
+UICorner2.CornerRadius = UDim.new(0, 6)
+UICorner2.Parent = Title
 
-UserInputService.InputChanged:Connect(function(input)
-    if input == dragInput and dragging then
-        local delta = input.Position - dragStart
-        MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-    end
-end)
+FpsLabel.Name = "FpsLabel"
+FpsLabel.Parent = MainFrame
+FpsLabel.BackgroundTransparency = 1
+FpsLabel.Position = UDim2.new(0, 0, 0.23, 0)
+FpsLabel.Size = UDim2.new(1, 0, 0, 20)
+FpsLabel.Font = Enum.Font.SourceSansBold
+FpsLabel.Text = "⚡ FPS: Measuring..."
+FpsLabel.TextColor3 = Color3.fromRGB(255, 215, 0)
+FpsLabel.TextSize = 13.000
 
--- RESIZE HANDLE (PADA POJOK KANAN BAWAH)
-local ResizeBtn = Instance.new("TextButton")
-ResizeBtn.Size = UDim2.new(0, 18, 0, 18)
-ResizeBtn.Position = UDim2.new(1, -18, 1, -18)
-ResizeBtn.BackgroundTransparency = 1
-ResizeBtn.Text = "◢"
-ResizeBtn.Font = Enum.Font.GothamBold
-ResizeBtn.TextColor3 = Color3.fromRGB(150, 150, 150)
-ResizeBtn.TextSize = 12
-ResizeBtn.Parent = MainFrame
+AfkLabel.Name = "AfkLabel"
+AfkLabel.Parent = MainFrame
+AfkLabel.BackgroundTransparency = 1
+AfkLabel.Position = UDim2.new(0, 0, 0.41, 0)
+AfkLabel.Size = UDim2.new(1, 0, 0, 20)
+AfkLabel.Font = Enum.Font.SourceSans
+AfkLabel.Text = "⏱️ AFK: 00j 00m 00s"
+AfkLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+AfkLabel.TextSize = 12.000
 
-local resizing = false
-local resizeStart, startSize
+ToggleBtn.Name = "ToggleBtn"
+ToggleBtn.Parent = MainFrame
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(40, 180, 80)
+ToggleBtn.Position = UDim2.new(0.08, 0, 0.62, 0)
+ToggleBtn.Size = UDim2.new(0.84, 0, 0.30, 0)
+ToggleBtn.Font = Enum.Font.SourceSansBold
+ToggleBtn.Text = "Zhub Mode: ON"
+ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleBtn.TextSize = 12.000
 
-ResizeBtn.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        resizing = true
-        resizeStart = input.Position
-        startSize = MainFrame.AbsoluteSize
-        
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then
-                resizing = false
-            end
-        end)
-    end
-end)
-
-UserInputService.InputChanged:Connect(function(input)
-    if resizing and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-        local delta = input.Position - resizeStart
-        local newWidth = math.clamp(startSize.X + delta.X, 320, 800)
-        local newHeight = math.clamp(startSize.Y + delta.Y, 300, 600)
-        MainFrame.Size = UDim2.new(0, newWidth, 0, newHeight)
-    end
-end)
-
--- CLOSE BUTTON
-local CloseBtn = Instance.new("TextButton")
-CloseBtn.Size = UDim2.new(0, 26, 0, 26)
-CloseBtn.Position = UDim2.new(1, -32, 0, 7)
-CloseBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-CloseBtn.Text = "X"
-CloseBtn.Font = Enum.Font.GothamBold
-CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-CloseBtn.Parent = Topbar
-Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 6)
-CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
-
--- MINIMIZE / RESTORE BUTTON
-local isMinimized = false
-local MinBtn = Instance.new("TextButton")
-MinBtn.Size = UDim2.new(0, 26, 0, 26)
-MinBtn.Position = UDim2.new(1, -64, 0, 7)
-MinBtn.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-MinBtn.Text = "-"
-MinBtn.Font = Enum.Font.GothamBold
-MinBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-MinBtn.Parent = Topbar
-Instance.new("UICorner", MinBtn).CornerRadius = UDim.new(0, 6)
-
--- CONTAINER UTAMA
-local Container = Instance.new("Frame")
-Container.Size = UDim2.new(1, 0, 1, -40)
-Container.Position = UDim2.new(0, 0, 0, 40)
-Container.BackgroundTransparency = 1
-Container.Parent = MainFrame
-
-MinBtn.MouseButton1Click:Connect(function()
-    isMinimized = not isMinimized
-    Container.Visible = not isMinimized
-    if isMinimized then
-        MainFrame.Size = UDim2.new(0, MainFrame.AbsoluteSize.X, 0, 40)
-        MinBtn.Text = "+"
+ToggleBtn.MouseButton1Click:Connect(function()
+    if not VulkanActive then
+        enableVulkan()
+        ToggleBtn.Text = "Zhub Mode: ON"
+        ToggleBtn.BackgroundColor3 = Color3.fromRGB(40, 180, 80)
     else
-        MainFrame.Size = UDim2.new(0, MainFrame.AbsoluteSize.X, 0, 400)
-        MinBtn.Text = "-"
+        disableVulkan()
+        ToggleBtn.Text = "Zhub Mode: OFF"
+        ToggleBtn.BackgroundColor3 = Color3.fromRGB(180, 40, 40)
     end
 end)
 
--- BURIK MODE (Y = 5)
-local BtnOpt = Instance.new("TextButton")
-BtnOpt.Size = UDim2.new(1, -20, 0, 26)
-BtnOpt.Position = UDim2.new(0, 10, 0, 5)
-BtnOpt.BackgroundColor3 = Color3.fromRGB(180, 50, 50)
-BtnOpt.Text = "ULTIMATE BURIK MODE: OFF ❌"
-BtnOpt.Font = Enum.Font.GothamBold
-BtnOpt.TextColor3 = Color3.fromRGB(255, 255, 255)
-BtnOpt.TextSize = 11
-BtnOpt.Parent = Container
-Instance.new("UICorner", BtnOpt).CornerRadius = UDim.new(0, 6)
-
--- TAB BUTTONS (Y = 38)
-local TabWidth = (400 / 3) - 4
-local TabFruits = Instance.new("TextButton")
-TabFruits.Size = UDim2.new(0, TabWidth, 0, 26)
-TabFruits.Position = UDim2.new(0, 10, 0, 38)
-TabFruits.BackgroundColor3 = Color3.fromRGB(50, 120, 50)
-TabFruits.Text = "FRUITS"
-TabFruits.Font = Enum.Font.GothamBold
-TabFruits.TextColor3 = Color3.fromRGB(255, 255, 255)
-TabFruits.TextSize = 11
-TabFruits.Parent = Container
-Instance.new("UICorner", TabFruits).CornerRadius = UDim.new(0, 6)
-
-local TabSprinklers = Instance.new("TextButton")
-TabSprinklers.Size = UDim2.new(0, TabWidth, 0, 26)
-TabSprinklers.Position = UDim2.new(0, 10 + TabWidth + 5, 0, 38)
-TabSprinklers.BackgroundColor3 = Color3.fromRGB(30, 40, 30)
-TabSprinklers.Text = "SPRINKLERS"
-TabSprinklers.Font = Enum.Font.GothamBold
-TabSprinklers.TextColor3 = Color3.fromRGB(255, 255, 255)
-TabSprinklers.TextSize = 11
-TabSprinklers.Parent = Container
-Instance.new("UICorner", TabSprinklers).CornerRadius = UDim.new(0, 6)
-
-local TabCans = Instance.new("TextButton")
-TabCans.Size = UDim2.new(0, TabWidth, 0, 26)
-TabCans.Position = UDim2.new(0, 10 + (TabWidth * 2) + 10, 0, 38)
-TabCans.BackgroundColor3 = Color3.fromRGB(30, 40, 30)
-TabCans.Text = "WATERING CANS"
-TabCans.Font = Enum.Font.GothamBold
-TabCans.TextColor3 = Color3.fromRGB(255, 255, 255)
-TabCans.TextSize = 10
-TabCans.Parent = Container
-Instance.new("UICorner", TabCans).CornerRadius = UDim.new(0, 6)
-
--- PAGE CONTAINERS (Y = 68)
-local PageFruits = Instance.new("Frame")
-PageFruits.Size = UDim2.new(1, -20, 0, 175)
-PageFruits.Position = UDim2.new(0, 10, 0, 68)
-PageFruits.BackgroundTransparency = 1
-PageFruits.Parent = Container
-
-local PageSprinklers = Instance.new("Frame")
-PageSprinklers.Size = UDim2.new(1, -20, 0, 175)
-PageSprinklers.Position = UDim2.new(0, 10, 0, 68)
-PageSprinklers.BackgroundTransparency = 1
-PageSprinklers.Visible = false
-PageSprinklers.Parent = Container
-
-local PageCans = Instance.new("Frame")
-PageCans.Size = UDim2.new(1, -20, 0, 175)
-PageCans.Position = UDim2.new(0, 10, 0, 68)
-PageCans.BackgroundTransparency = 1
-PageCans.Visible = false
-PageCans.Parent = Container
-
-local function switchTab(tabName)
-    TabFruits.BackgroundColor3 = Color3.fromRGB(30, 40, 30)
-    TabSprinklers.BackgroundColor3 = Color3.fromRGB(30, 40, 30)
-    TabCans.BackgroundColor3 = Color3.fromRGB(30, 40, 30)
-    
-    PageFruits.Visible = false
-    PageSprinklers.Visible = false
-    PageCans.Visible = false
-    
-    if tabName == "Fruits" then
-        TabFruits.BackgroundColor3 = Color3.fromRGB(50, 120, 50)
-        PageFruits.Visible = true
-    elseif tabName == "Sprinklers" then
-        TabSprinklers.BackgroundColor3 = Color3.fromRGB(50, 120, 50)
-        PageSprinklers.Visible = true
-    elseif tabName == "Cans" then
-        TabCans.BackgroundColor3 = Color3.fromRGB(50, 120, 50)
-        PageCans.Visible = true
-    end
-end
-
-TabFruits.MouseButton1Click:Connect(function() switchTab("Fruits") end)
-TabSprinklers.MouseButton1Click:Connect(function() switchTab("Sprinklers") end)
-TabCans.MouseButton1Click:Connect(function() switchTab("Cans") end)
-
-local function buildPage(pageFrame, toggleName)
-    local ToggleBtn = Instance.new("TextButton")
-    ToggleBtn.Size = UDim2.new(1, 0, 0, 28)
-    ToggleBtn.Position = UDim2.new(0, 0, 0, 0)
-    ToggleBtn.BackgroundColor3 = Color3.fromRGB(180, 50, 50)
-    ToggleBtn.Text = "AUTO BUY " .. toggleName .. ": OFF ❌"
-    ToggleBtn.Font = Enum.Font.GothamBold
-    ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    ToggleBtn.TextSize = 11
-    ToggleBtn.Parent = pageFrame
-    Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(0, 6)
-    
-    local StatusText = Instance.new("TextLabel")
-    StatusText.Size = UDim2.new(1, 0, 0, 20)
-    StatusText.Position = UDim2.new(0, 0, 0, 32)
-    StatusText.BackgroundColor3 = Color3.fromRGB(20, 25, 20)
-    StatusText.Text = " Pilihan: (Belum ada)"
-    StatusText.Font = Enum.Font.GothamSemibold
-    StatusText.TextColor3 = Color3.fromRGB(255, 255, 255)
-    StatusText.TextSize = 10
-    StatusText.TextXAlignment = Enum.TextXAlignment.Left
-    StatusText.TextTruncate = Enum.TextTruncate.AtEnd
-    StatusText.Parent = pageFrame
-    Instance.new("UICorner", StatusText).CornerRadius = UDim.new(0, 4)
-    
-    local ScrollList = Instance.new("ScrollingFrame")
-    ScrollList.Size = UDim2.new(1, 0, 0, 120)
-    ScrollList.Position = UDim2.new(0, 0, 0, 55)
-    ScrollList.BackgroundColor3 = Color3.fromRGB(15, 20, 15)
-    ScrollList.BorderSizePixel = 0
-    ScrollList.ScrollBarThickness = 3
-    ScrollList.Parent = pageFrame
-    Instance.new("UICorner", ScrollList).CornerRadius = UDim.new(0, 6)
-    
-    return ToggleBtn, StatusText, ScrollList
-end
-
-local ToggleF, StatusF, ScrollF = buildPage(PageFruits, "FRUITS")
-local ToggleS, StatusS, ScrollS = buildPage(PageSprinklers, "SPRINKLERS")
-local ToggleC, StatusC, ScrollC = buildPage(PageCans, "WATERING CANS")
-
-local selectedFruits = {}
-local selectedSprinklers = {}
-local selectedCans = {}
-
-local function refreshStatus(selectionTable, statusLabel)
-    local list = {}
-    for name, active in pairs(selectionTable) do
-        if active then table.insert(list, name) end
-    end
-    statusLabel.Text = #list > 0 and " Pilihan: " .. table.concat(list, ", ") or " Pilihan: (Belum ada)"
-end
-
-local function populateListScanned(folder, scrollFrame, selectionTable, statusLabel)
-    if not folder then return 0 end
-    local count = 0
-    local currentY = 2
-    for _, child in ipairs(folder:GetChildren()) do
-        if child.Name ~= "" then
-            local btn = Instance.new("TextButton")
-            btn.Size = UDim2.new(1, -8, 0, 24)
-            btn.Position = UDim2.new(0, 4, 0, currentY)
-            btn.BackgroundColor3 = Color3.fromRGB(30, 45, 30)
-            btn.Text = "[ ] " .. child.Name
-            btn.Font = Enum.Font.GothamBold
-            btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-            btn.TextSize = 11
-            btn.Parent = scrollFrame
-            Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 4)
-            
-            local isSelected = false
-            btn.MouseButton1Click:Connect(function()
-                isSelected = not isSelected
-                if isSelected then
-                    btn.BackgroundColor3 = Color3.fromRGB(50, 120, 50)
-                    btn.Text = "[✔] " .. child.Name
-                    selectionTable[child.Name] = true
-                else
-                    btn.BackgroundColor3 = Color3.fromRGB(30, 45, 30)
-                    btn.Text = "[ ] " .. child.Name
-                    selectionTable[child.Name] = nil
-                end
-                refreshStatus(selectionTable, statusLabel)
-            end)
-            
-            currentY = currentY + 28
-            count = count + 1
-        end
-    end
-    scrollFrame.CanvasSize = UDim2.new(0, 0, 0, currentY + 5)
-    return count
-end
-
-local function populateListPermanent(itemTable, scrollFrame, selectionTable, statusLabel)
-    local count = 0
-    local currentY = 2
-    for _, itemName in ipairs(itemTable) do
-        local btn = Instance.new("TextButton")
-        btn.Size = UDim2.new(1, -8, 0, 24)
-        btn.Position = UDim2.new(0, 4, 0, currentY)
-        btn.BackgroundColor3 = Color3.fromRGB(30, 45, 30)
-        btn.Text = "[ ] " .. itemName
-        btn.Font = Enum.Font.GothamBold
-        btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-        btn.TextSize = 11
-        btn.Parent = scrollFrame
-        Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 4)
-        
-        local isSelected = false
-        btn.MouseButton1Click:Connect(function()
-            isSelected = not isSelected
-            if isSelected then
-                btn.BackgroundColor3 = Color3.fromRGB(50, 120, 50)
-                btn.Text = "[✔] " .. itemName
-                selectionTable[itemName] = true
-            else
-                btn.BackgroundColor3 = Color3.fromRGB(30, 45, 30)
-                btn.Text = "[ ] " .. itemName
-                selectionTable[itemName] = nil
-            end
-            refreshStatus(selectionTable, statusLabel)
-        end)
-        
-        currentY = currentY + 28
-        count = count + 1
-    end
-    scrollFrame.CanvasSize = UDim2.new(0, 0, 0, currentY + 5)
-    return count
-end
-
-local PERMANENT_SPRINKLERS = {
-    "Common Sprinkler",
-    "Uncommon Sprinkler",
-    "Rare Sprinkler",
-    "Super Sprinkler",
-    "Legendary Sprinkler"
-}
-
-local PERMANENT_CANS = {
-    "Common Watering Can",
-    "Super Watering Can"
-}
-
--- LOG AREA
-local LogFrame = Instance.new("Frame")
-LogFrame.Size = UDim2.new(1, -20, 0, 80)
-LogFrame.Position = UDim2.new(0, 10, 0, 250)
-LogFrame.BackgroundColor3 = Color3.fromRGB(12, 16, 12)
-LogFrame.BorderSizePixel = 0
-LogFrame.Parent = Container
-Instance.new("UICorner", LogFrame).CornerRadius = UDim.new(0, 6)
-
-local ScrollingLog = Instance.new("ScrollingFrame")
-ScrollingLog.Size = UDim2.new(1, -10, 1, -10)
-ScrollingLog.Position = UDim2.new(0, 5, 0, 5)
-ScrollingLog.BackgroundTransparency = 1
-ScrollingLog.BorderSizePixel = 0
-ScrollingLog.ScrollBarThickness = 2
-ScrollingLog.Parent = LogFrame
-
-local logY = 0
-local function addLog(text, color)
-    local newLog = Instance.new("TextLabel")
-    newLog.Size = UDim2.new(1, 0, 0, 14)
-    newLog.Position = UDim2.new(0, 0, 0, logY)
-    newLog.BackgroundTransparency = 1
-    newLog.Text = "> " .. text
-    newLog.Font = Enum.Font.Code
-    newLog.TextColor3 = color or Color3.fromRGB(255, 255, 255)
-    newLog.TextSize = 11
-    newLog.TextXAlignment = Enum.TextXAlignment.Left
-    newLog.Parent = ScrollingLog
-    
-    logY = logY + 16
-    ScrollingLog.CanvasSize = UDim2.new(0, 0, 0, logY)
-    ScrollingLog.CanvasPosition = Vector2.new(0, logY)
-end
-
-pcall(function()
-    local fFruits = ReplicatedStorage:FindFirstChild("Assets") and ReplicatedStorage.Assets:FindFirstChild("Fruits")
-    local cFruits = populateListScanned(fFruits, ScrollF, selectedFruits, StatusF)
-    
-    local cSprinklers = populateListPermanent(PERMANENT_SPRINKLERS, ScrollS, selectedSprinklers, StatusS)
-    local cCans = populateListPermanent(PERMANENT_CANS, ScrollC, selectedCans, StatusC)
-    
-    addLog("Zhub Pro Loaded! Items: "..cFruits, Color3.fromRGB(100, 255, 100))
-end)
-
-local function setupToggle(btn, logName, stateVar)
-    btn.MouseButton1Click:Connect(function()
-        stateVar.value = not stateVar.value
-        if stateVar.value then
-            btn.Text = "AUTO BUY " .. logName .. ": ON ⚡"
-            btn.BackgroundColor3 = Color3.fromRGB(50, 160, 80)
-            addLog("Auto " .. logName .. " Aktif!", Color3.fromRGB(100, 255, 100))
-        else
-            btn.Text = "AUTO BUY " .. logName .. ": OFF ❌"
-            btn.BackgroundColor3 = Color3.fromRGB(180, 50, 50)
-        end
-    end)
-end
-
-local sFruits = {value = false}
-local sSprinklers = {value = false}
-local sCans = {value = false}
-
-setupToggle(ToggleF, "FRUITS", sFruits)
-setupToggle(ToggleS, "SPRINKLERS", sSprinklers)
-setupToggle(ToggleC, "WATERING CANS", sCans)
-
--- AUTO BUY PACKET LOOP
+-- LOGIC ANIMASI INTRO ZARSHUB
 task.spawn(function()
-    while true do
-        task.wait(0.2)
-        if sFruits.value then
-            pcall(function()
-                for itemName, active in pairs(selectedFruits) do
-                    if active then
-                        local lenChar = string.char(#itemName)
-                        local packetString = "\133\000" .. lenChar .. itemName
-                        local args = { buffer.fromstring(packetString) }
-                        local remote = ReplicatedStorage:WaitForChild("SharedModules"):WaitForChild("Packet"):WaitForChild("RemoteEvent")
-                        remote:FireServer(unpack(args))
-                    end
-                end
-            end)
-        end
+    TweenService:Create(IntroFrame, TweenInfo.new(0.4), {BackgroundTransparency = 0.2}):Play()
+    TweenService:Create(IntroSub, TweenInfo.new(0.4), {TextTransparency = 0}):Play()
+    TweenService:Create(BarBackground, TweenInfo.new(0.4), {BackgroundTransparency = 0}):Play()
+    
+    local nameText = "ZarsHub"
+    for i = 1, #nameText do
+        IntroTitle.Text = string.sub(nameText, 1, i)
+        task.wait(0.1)
+    end
+
+    task.wait(2.0)
+
+    TweenService:Create(BarFill, TweenInfo.new(1.0, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.new(1, 0, 1, 0)}):Play()
+    task.wait(1.1)
+
+    TweenService:Create(IntroFrame, TweenInfo.new(0.5), {BackgroundTransparency = 1}):Play()
+    TweenService:Create(IntroTitle, TweenInfo.new(0.5), {TextTransparency = 1}):Play()
+    TweenService:Create(IntroSub, TweenInfo.new(0.5), {TextTransparency = 1}):Play()
+    TweenService:Create(BarBackground, TweenInfo.new(0.5), {BackgroundTransparency = 1}):Play()
+    TweenService:Create(BarFill, TweenInfo.new(0.5), {BackgroundTransparency = 1}):Play()
+    
+    task.wait(0.5)
+    IntroFrame:Destroy()
+
+    MainFrame.Visible = true
+    enableVulkan()
+end)
+
+-- LOGIC OPTIMIZED (FPS & AFK TIMER)
+local startTime = os.time()
+local frameCount = 0
+local lastClock = os.clock()
+
+RunService.RenderStepped:Connect(function()
+    frameCount = frameCount + 1
+    local currentClock = os.clock()
+    
+    if currentClock - lastClock >= 0.5 then
+        local fps = math.floor(frameCount / (currentClock - lastClock))
+        FpsLabel.Text = "⚡ FPS: " .. tostring(fps)
+        frameCount = 0
+        lastClock = currentClock
     end
 end)
 
 task.spawn(function()
     while true do
-        task.wait(0.5)
-        if sSprinklers.value then
-            pcall(function()
-                for itemName, active in pairs(selectedSprinklers) do
-                    if active then
-                        local lenChar = string.char(#itemName)
-                        local packetString = "\133\000" .. lenChar .. itemName
-                        local args = { buffer.fromstring(packetString) }
-                        local remote = ReplicatedStorage:WaitForChild("SharedModules"):WaitForChild("Packet"):WaitForChild("RemoteEvent")
-                        remote:FireServer(unpack(args))
-                    end
-                end
-            end)
-        end
-    end
-end)
-
-task.spawn(function()
-    while true do
-        task.wait(0.5)
-        if sCans.value then
-            pcall(function()
-                for itemName, active in pairs(selectedCans) do
-                    if active then
-                        local lenChar = string.char(#itemName)
-                        local packetString = "\133\000" .. lenChar .. itemName
-                        local args = { buffer.fromstring(packetString) }
-                        local remote = ReplicatedStorage:WaitForChild("SharedModules"):WaitForChild("Packet"):WaitForChild("RemoteEvent")
-                        remote:FireServer(unpack(args))
-                    end
-                end
-            end)
-        end
-    end
-end)
-
--- BURIK GACOR (TANAH / NAPAK AMAN)
-local function applyUltimateBurik()
-    pcall(function()
-        Lighting.GlobalShadows = false
-        Lighting.Brightness = 2
-        Lighting.FogEnd = 999999
-        for _, v in pairs(Lighting:GetDescendants()) do
-            if v:IsA("PostEffect") or v:IsA("Sky") or v:IsA("Atmosphere") or v:IsA("Clouds") then v:Destroy() end
-        end
+        local elapsed = os.time() - startTime
+        local hrs = math.floor(elapsed / 3600)
+        local mins = math.floor((elapsed % 3600) / 60)
+        local secs = elapsed % 60
         
-        for _, obj in pairs(Workspace:GetDescendants()) do
-            local nameLower = string.lower(obj.Name)
-            local isGround = (nameLower:find("baseplate") or nameLower:find("terrain") or nameLower:find("floor") or nameLower:find("ground") or nameLower:find("land"))
-            
-            if not isGround then
-                if obj:IsA("ParticleEmitter") or obj:IsA("Trail") or obj:IsA("Smoke") or obj:IsA("Fire") or obj:IsA("Sparkles") or obj:IsA("Texture") or obj:IsA("Decal") then 
-                    obj:Destroy() 
-                elseif obj:IsA("BasePart") then
-                    obj.Material = Enum.Material.SmoothPlastic
-                    obj.Reflectance = 0
-                end
-            else
-                if obj:IsA("Texture") or obj:IsA("Decal") then
-                    obj:Destroy()
-                elseif obj:IsA("BasePart") then
-                    obj.Material = Enum.Material.SmoothPlastic
-                end
-            end
-        end
+        AfkLabel.Text = string.format("⏱️ AFK: %02dj %02dm %02ds", hrs, mins, secs)
+        task.wait(1)
         
-        for _, p in ipairs(Players:GetPlayers()) do
-            if p.Character then
-                for _, item in ipairs(p.Character:GetDescendants()) do
-                    if item:IsA("Accessory") or item:IsA("Clothing") or item:IsA("ShirtGraphic") or item:IsA("BodyColors") then
-                        item:Destroy()
-                    elseif item:IsA("BasePart") then
-                        item.Material = Enum.Material.SmoothPlastic
-                        item.Reflectance = 0
-                    end
-                end
-            end
-        end
-        
-        local gardensFolder = Workspace:FindFirstChild("Gardens")
-        if gardensFolder then
-            for _, plot in pairs(gardensFolder:GetChildren()) do
-                local plotName = plot.Name
-                local isMyPlot = (plotName == "Plot_" .. LocalPlayer.Name) or (plotName == "Plot1") or (plotName:find(LocalPlayer.Name))
-                
-                if not isMyPlot then
-                    plot:Destroy()
-                else
-                    for _, pPart in pairs(plot:GetDescendants()) do
-                        if pPart:IsA("BasePart") then 
-                            pPart.Material = Enum.Material.SmoothPlastic 
-                            pPart.Reflectance = 0
-                        elseif pPart:IsA("Texture") or pPart:IsA("Decal") then 
-                            pPart:Destroy() 
-                        end
-                    end
-                end
-            end
-        end
-    end)
-end
-
-local isOptimized = false
-BtnOpt.MouseButton1Click:Connect(function()
-    isOptimized = not isOptimized
-    if isOptimized then
-        BtnOpt.Text = "ULTIMATE BURIK MODE: ON ⚡"
-        BtnOpt.BackgroundColor3 = Color3.fromRGB(50, 160, 80)
-        applyUltimateBurik()
-        addLog("Burik Gacor Aktif (Tanah Aman)!", Color3.fromRGB(100, 255, 100))
-    else
-        BtnOpt.Text = "ULTIMATE BURIK MODE: OFF ❌"
-        BtnOpt.BackgroundColor3 = Color3.fromRGB(180, 50, 50)
-        addLog("Mode Burik Dimatikan.", Color3.fromRGB(255, 200, 100))
+        if not ScreenGui.Parent then break end
     end
-end)
-
-task.spawn(function()
-    task.wait(2)
-    isOptimized = true
-    BtnOpt.Text = "ULTIMATE BURIK MODE: ON ⚡"
-    BtnOpt.BackgroundColor3 = Color3.fromRGB(50, 160, 80)
-    applyUltimateBurik()
-    addLog("Auto-Applied Performance Boost!", Color3.fromRGB(100, 255, 100))
-end)
+end)                     
+                            
+        
