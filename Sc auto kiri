@@ -1,5 +1,5 @@
-                   -- ========================================================
--- ZHUB FPS DROP PERFORMANCE
+-- ========================================================
+-- ZHUB MULTI-INSTANCE OPTIMIZER (FIXED LOAD & ANTI-LAG)
 -- ========================================================
 
 local Players = game:GetService("Players")
@@ -9,6 +9,11 @@ local RunService = game:GetService("RunService")
 local StarterGui = game:GetService("StarterGui")
 local TweenService = game:GetService("TweenService")
 local LocalPlayer = Players.LocalPlayer
+
+-- 1. KUNCI FPS KE 20 (Supaya Multi-Account Gak Kepanasan/Throttling)
+if setfpscap then
+    pcall(function() setfpscap(20) end)
+end
 
 local OriginalAmbient = Lighting.Ambient
 local OriginalOutdoorAmbient = Lighting.OutdoorAmbient
@@ -30,7 +35,24 @@ local function notifyLog(titleText, descText)
     end)
 end
 
--- 1. STRIP PLAYER (Hapus Baju & Aksesoris)
+-- 2. HAPUS PARTIKEL & SUARA (Penyebab RAM Bengkak Pas AFK Lama)
+for _, v in pairs(game:GetDescendants()) do
+    if v:IsA("Sound") then
+        v.Volume = 0
+    elseif v:IsA("ParticleEmitter") or v:IsA("Smoke") or v:IsA("Fire") or v:IsA("Sparkles") then
+        v.Enabled = false
+    end
+end
+
+game.DescendantAdded:Connect(function(v)
+    if v:IsA("Sound") then
+        v.Volume = 0
+    elseif v:IsA("ParticleEmitter") or v:IsA("Smoke") or v:IsA("Fire") or v:IsA("Sparkles") then
+        v.Enabled = false
+    end
+end)
+
+-- 3. STRIP PLAYER (Hapus Baju & Aksesoris)
 local function stripCharacter(char)
     if not char or not VulkanActive then return end
     for _, item in pairs(char:GetChildren()) do
@@ -50,7 +72,7 @@ local function stripCharacter(char)
     end
 end
 
--- 2. FILTER OBJEK & PLOT
+-- 4. FILTER OBJEK & PLOT
 local function processObject(obj)
     if not VulkanActive then return end
 
@@ -93,7 +115,7 @@ local function processObject(obj)
     end
 end
 
--- 3. TOGGLE SYSTEM
+-- 5. TOGGLE SYSTEM
 local function enableVulkan()
     VulkanActive = true
     
@@ -114,7 +136,7 @@ local function enableVulkan()
 
     notifyLog(
         "ZHUB SYSTEM ⚡", 
-        "Zhub Mode: ON aktif! HP adem siap AFK seharian, jangan Nolep melulu ya bro! 🥔🔥\n\nSalam, Thaizardooo"
+        "Zhub Mode: ON aktif! Multi-Bot Anti-Lag Ready!\n\nSalam, Thaizardooo"
     )
 end
 
@@ -131,11 +153,11 @@ local function disableVulkan()
 
     notifyLog(
         "ZHUB SYSTEM 🌿", 
-        "Zhub Mode: OFF! Anjay akhirnya lu hirup udara segar, Rejoin game kalo mau balikin semua ke asal ya! 🚪💨\n\nSalam, Thaizardooo"
+        "Zhub Mode: OFF!\n\nSalam, Thaizardooo"
     )
 end
 
--- 4. INTRO ANIMATION & GUI BUILDER
+-- 6. INTRO ANIMATION & GUI BUILDER
 local ParentTarget = LocalPlayer:WaitForChild("PlayerGui")
 if ParentTarget:FindFirstChild("ZhubVulkanGui") then
     ParentTarget.ZhubVulkanGui:Destroy()
@@ -146,9 +168,7 @@ ScreenGui.Name = "ZhubVulkanGui"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = ParentTarget
 
--- ========================================================
 -- INTRO FRAME (ZARSHUB)
--- ========================================================
 local IntroFrame = Instance.new("Frame")
 IntroFrame.Name = "IntroFrame"
 IntroFrame.Parent = ScreenGui
@@ -297,7 +317,14 @@ task.spawn(function()
     enableVulkan()
 end)
 
--- LOGIC OPTIMIZED (FPS & AFK TIMER)
+-- 7. AUTO GARBAGE COLLECTION (BERSIHIN RAM TIAP 3 MENIT)
+task.spawn(function()
+    while true do
+        task.wait(180)
+        collectgarbage("collect")
+    end
+end)
+
 local startTime = os.time()
 local frameCount = 0
 local lastClock = os.clock()
@@ -308,7 +335,7 @@ RunService.RenderStepped:Connect(function()
     
     if currentClock - lastClock >= 0.5 then
         local fps = math.floor(frameCount / (currentClock - lastClock))
-        FpsLabel.Text = "⚡ FPS: " .. tostring(fps)
+        FpsLabel.Text = "⚡ FPS: " .. tostring(fps) -- BSUG DAH DIBERSIHKAN!
         frameCount = 0
         lastClock = currentClock
     end
@@ -326,6 +353,4 @@ task.spawn(function()
         
         if not ScreenGui.Parent then break end
     end
-end)                     
-                            
-        
+end)
