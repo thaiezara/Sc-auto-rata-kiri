@@ -12,7 +12,8 @@ local CONFIG = {
     FpsUpdateInterval = 0.5,    -- Interval refresh FPS counter (detik)
     IntroTypeSpeed = 0.1,       -- Kecepatan animasi ketik nama intro
     BrandName = "ZarsHub",
-    PromoText = "Jangan lupa topup Robux kesayangan kalian hanya di ZarVerseStore ya, biar makin gacor pas dipake nuyul!",
+    OnMessage = "Mode Booster Aktif ⚡ Silahkan AFK, FPS udah di-lock buat performa maksimal.",
+    OffMessage = "Mode Booster Mati 🌿 Rejoin game buat balikin tampilan & performa normal ya.",
     SafePlotKeywords = {"plot1", "plot 1"}, -- Keyword plot yang otomatis aman
 }
 
@@ -206,7 +207,7 @@ local function enableVulkan()
 
     notifyLog(
         CONFIG.BrandName .. " ⚡",
-        "Mode: ON aktif! Multi-Bot Anti-Lag Ready!\n\n" .. CONFIG.PromoText
+        CONFIG.OnMessage
     )
 end
 
@@ -225,7 +226,7 @@ local function disableVulkan()
 
     notifyLog(
         CONFIG.BrandName .. " 🌿",
-        "Mode: OFF!\n\n" .. CONFIG.PromoText
+        CONFIG.OffMessage
     )
 end
 
@@ -252,18 +253,28 @@ IntroFrame.ZIndex = 10
 local IntroTitle = Instance.new("TextLabel")
 IntroTitle.Parent = IntroFrame
 IntroTitle.BackgroundTransparency = 1
-IntroTitle.Position = UDim2.new(0.5, -150, 0.4, -25)
+IntroTitle.AnchorPoint = Vector2.new(0.5, 0.5)
+IntroTitle.Position = UDim2.new(0.5, 0, 0.4, -25)
 IntroTitle.Size = UDim2.new(0, 300, 0, 50)
 IntroTitle.Font = Enum.Font.GothamBold
 IntroTitle.Text = ""
 IntroTitle.TextColor3 = Color3.fromRGB(0, 255, 150)
+IntroTitle.TextTransparency = 1
 IntroTitle.TextSize = 40
 IntroTitle.ZIndex = 11
+
+-- Glow tipis di belakang teks biar berasa "premium"
+local IntroGlow = Instance.new("UIStroke")
+IntroGlow.Parent = IntroTitle
+IntroGlow.Color = Color3.fromRGB(0, 255, 150)
+IntroGlow.Thickness = 0
+IntroGlow.Transparency = 0.4
 
 local IntroSub = Instance.new("TextLabel")
 IntroSub.Parent = IntroFrame
 IntroSub.BackgroundTransparency = 1
-IntroSub.Position = UDim2.new(0.5, -150, 0.5, 5)
+IntroSub.AnchorPoint = Vector2.new(0.5, 0.5)
+IntroSub.Position = UDim2.new(0.5, 0, 0.5, 20)
 IntroSub.Size = UDim2.new(0, 300, 0, 20)
 IntroSub.Font = Enum.Font.SourceSansItalic
 IntroSub.Text = "Initializing Performance Mode..."
@@ -285,6 +296,15 @@ BarFill.Parent = BarBackground
 BarFill.BackgroundColor3 = Color3.fromRGB(0, 255, 150)
 BarFill.Size = UDim2.new(0, 0, 1, 0)
 BarFill.ZIndex = 12
+
+-- Gradient warna jalan di progress bar biar gak flat ijo doang
+local BarGradient = Instance.new("UIGradient")
+BarGradient.Parent = BarFill
+BarGradient.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 255, 150)),
+    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(0, 200, 255)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 255, 150)),
+})
 
 -- ============ UI MAIN FRAME ============
 local MainFrame = Instance.new("Frame")
@@ -360,30 +380,51 @@ ToggleBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- ============ LOGIC ANIMASI INTRO ============
+-- ============ LOGIC ANIMASI INTRO (CINEMATIC VERSION) ============
 task.spawn(function()
     if not Session.Alive then return end
 
+    -- 1. Fade in background gelap
     TweenService:Create(IntroFrame, TweenInfo.new(0.4), {BackgroundTransparency = 0.2}):Play()
-    TweenService:Create(IntroSub, TweenInfo.new(0.4), {TextTransparency = 0}):Play()
-    TweenService:Create(BarBackground, TweenInfo.new(0.4), {BackgroundTransparency = 0}):Play()
-
-    local nameText = CONFIG.BrandName
-    for i = 1, #nameText do
-        if not Session.Alive then return end
-        IntroTitle.Text = string.sub(nameText, 1, i)
-        task.wait(CONFIG.IntroTypeSpeed)
-    end
-
-    task.wait(2.0)
+    task.wait(0.25)
     if not Session.Alive then return end
 
+    -- 2. Pop-in nama brand: scale kecil -> gede dikit -> normal (bounce effect pakai EasingStyle.Back)
+    IntroTitle.Text = CONFIG.BrandName
+    IntroTitle.Size = UDim2.new(0, 210, 0, 35)
+    TweenService:Create(IntroTitle, TweenInfo.new(0.55, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+        TextTransparency = 0,
+        Size = UDim2.new(0, 300, 0, 50),
+    }):Play()
+
+    -- 3. Glow pulse bareng pop-in (stroke nongol dulu baru pudar dikit)
+    TweenService:Create(IntroGlow, TweenInfo.new(0.3), {Thickness = 3}):Play()
+    task.wait(0.3)
+    if not Session.Alive then return end
+    TweenService:Create(IntroGlow, TweenInfo.new(0.6, Enum.EasingStyle.Sine), {Thickness = 1}):Play()
+
+    task.wait(0.35)
+    if not Session.Alive then return end
+
+    -- 4. Subtitle naik dari bawah + fade in
+    TweenService:Create(IntroSub, TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+        TextTransparency = 0,
+        Position = UDim2.new(0.5, 0, 0.5, 5),
+    }):Play()
+    TweenService:Create(BarBackground, TweenInfo.new(0.4), {BackgroundTransparency = 0}):Play()
+
+    task.wait(0.9)
+    if not Session.Alive then return end
+
+    -- 5. Progress bar jalan dengan gradient warna
     TweenService:Create(BarFill, TweenInfo.new(1.0, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.new(1, 0, 1, 0)}):Play()
     task.wait(1.1)
     if not Session.Alive then return end
 
+    -- 6. Exit: semua fade out bareng
     TweenService:Create(IntroFrame, TweenInfo.new(0.5), {BackgroundTransparency = 1}):Play()
     TweenService:Create(IntroTitle, TweenInfo.new(0.5), {TextTransparency = 1}):Play()
+    TweenService:Create(IntroGlow, TweenInfo.new(0.5), {Transparency = 1}):Play()
     TweenService:Create(IntroSub, TweenInfo.new(0.5), {TextTransparency = 1}):Play()
     TweenService:Create(BarBackground, TweenInfo.new(0.5), {BackgroundTransparency = 1}):Play()
     TweenService:Create(BarFill, TweenInfo.new(0.5), {BackgroundTransparency = 1}):Play()
