@@ -1,7 +1,22 @@
+-- == ZHUB MODULE ==
 -- ========================================================
 -- ZHUB MULTI-INSTANCE OPTIMIZER (FIXED LOAD & ANTI-LAG)
+-- Versi refactor: connection-cleanup, execution-guard, pcall-safe
 -- ========================================================
 
+-- ================= CONFIG BLOCK =================
+-- Semua yang sering lu tweak, taruh sini biar gak scroll-scroll
+local CONFIG = {
+    FpsCap = 20,                -- Target FPS cap
+    GcInterval = 180,           -- Interval garbage collection (detik)
+    FpsUpdateInterval = 0.5,    -- Interval refresh FPS counter (detik)
+    IntroTypeSpeed = 0.1,       -- Kecepatan animasi ketik nama intro
+    BrandName = "ZarsHub",
+    PromoText = "Jangan lupa topup Robux kesayangan kalian hanya di ZarVerseStore ya, biar makin gacor pas dipake nuyul!",
+    SafePlotKeywords = {"plot1", "plot 1"}, -- Keyword plot yang otomatis aman
+}
+
+-- ================= SERVICES =================
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 local Lighting = game:GetService("Lighting")
@@ -10,9 +25,45 @@ local StarterGui = game:GetService("StarterGui")
 local TweenService = game:GetService("TweenService")
 local LocalPlayer = Players.LocalPlayer
 
--- 1. KUNCI FPS KE 20 (Supaya Multi-Account Gak Kepanasan/Throttling)
+-- ================= EXECUTION GUARD =================
+-- Biar kalau script di-inject ulang, sesi lama otomatis mati duluan
+-- gak numpuk thread/loop/connection dobel-dobel
+if _G.ZhubOptimizerSession then
+    -- Matiin sesi lama
+    _G.ZhubOptimizerSession.Alive = false
+    pcall(function()
+        if _G.ZhubOptimizerSession.DescendantConnection then
+            _G.ZhubOptimizerSession.DescendantConnection:Disconnect()
+        end
+        if _G.ZhubOptimizerSession.PlayerConnection then
+            _G.ZhubOptimizerSession.PlayerConnection:Disconnect()
+        end
+        if _G.ZhubOptimizerSession.GlobalDescendantConnection then
+            _G.ZhubOptimizerSession.GlobalDescendantConnection:Disconnect()
+        end
+        if _G.ZhubOptimizerSession.RenderConnection then
+            _G.ZhubOptimizerSession.RenderConnection:Disconnect()
+        end
+        for _, conn in pairs(_G.ZhubOptimizerSession.CharacterConnections or {}) do
+            conn:Disconnect()
+        end
+    end)
+end
+
+-- Sesi baru, jadi acuan hidup/matinya semua loop di bawah
+local Session = {
+    Alive = true,
+    DescendantConnection = nil,
+    PlayerConnection = nil,
+    GlobalDescendantConnection = nil,
+    RenderConnection = nil,
+    CharacterConnections = {},
+}
+_G.ZhubOptimizerSession = Session
+
+-- ================= FPS CAP =================
 if setfpscap then
-    pcall(function() setfpscap(20) end)
+    pcall(function() setfpscap(CONFIG.FpsCap) end)
 end
 
 local OriginalAmbient = Lighting.Ambient
@@ -21,10 +72,8 @@ local OriginalBrightness = Lighting.Brightness
 local OriginalShadows = Lighting.GlobalShadows
 
 local VulkanActive = false
-local DescendantConnection = nil
-local PlayerConnection = nil
 
--- FUNGSI NOTIFIKASI LOG KHUSUS
+-- ================= NOTIFIKASI =================
 local function notifyLog(titleText, descText)
     pcall(function()
         StarterGui:SetCore("SendNotification", {
@@ -35,129 +84,152 @@ local function notifyLog(titleText, descText)
     end)
 end
 
--- 2. HAPUS PARTIKEL & SUARA (Penyebab RAM Bengkak Pas AFK Lama)
-for _, v in pairs(game:GetDescendants()) do
-    if v:IsA("Sound") then
-        v.Volume = 0
-    elseif v:IsA("ParticleEmitter") or v:IsA("Smoke") or v:IsA("Fire") or v:IsA("Sparkles") then
-        v.Enabled = false
-    end
+-- ================= HAPUS PARTIKEL & SUARA (ANTI RAM BENGKAK) =================
+local function silenceInstance(v)
+    pcall(function()
+        if v:IsA("Sound") then
+            v.Volume = 0
+        elseif v:IsA("ParticleEmitter") or v:IsA("Smoke") or v:IsA("Fire") or v:IsA("Sparkles") then
+            v.Enabled = false
+        end
+    end)
 end
 
-game.DescendantAdded:Connect(function(v)
-    if v:IsA("Sound") then
-        v.Volume = 0
-    elseif v:IsA("ParticleEmitter") or v:IsA("Smoke") or v:IsA("Fire") or v:IsA("Sparkles") then
-        v.Enabled = false
-    end
+for _, v in pairs(game:GetDescendants()) do
+    silenceInstance(v)
+end
+
+Session.GlobalDescendantConnection = game.DescendantAdded:Connect(function(v)
+    if not Session.Alive then return end
+    silenceInstance(v)
 end)
 
--- 3. STRIP PLAYER (Hapus Baju & Aksesoris)
+-- ================= STRIP CHARACTER (VULKAN MODE) =================
 local function stripCharacter(char)
-    if not char or not VulkanActive then return end
-    for _, item in pairs(char:GetChildren()) do
-        if item:IsA("Shirt") or item:IsA("Pants") or item:IsA("ShirtGraphic") or item:IsA("Accessory") then
-            item:Destroy()
-        elseif item:IsA("Head") then
-            for _, h in pairs(item:GetChildren()) do
-                if h:IsA("Decal") then h:Destroy() end
+    if not Session.Alive or not char or not VulkanActive then return end
+    pcall(function()
+        for _, item in pairs(char:GetChildren()) do
+            if item:IsA("Shirt") or item:IsA("Pants") or item:IsA("ShirtGraphic") or item:IsA("Accessory") then
+                item:Destroy()
+            elseif item:IsA("Head") then
+                for _, h in pairs(item:GetChildren()) do
+                    if h:IsA("Decal") then h:Destroy() end
+                end
             end
         end
-    end
-    for _, part in pairs(char:GetChildren()) do
-        if part:IsA("BasePart") then
-            part.Material = Enum.Material.SmoothPlastic
-            part.Color = Color3.fromRGB(240, 240, 240)
+        for _, part in pairs(char:GetChildren()) do
+            if part:IsA("BasePart") then
+                part.Material = Enum.Material.SmoothPlastic
+                part.Color = Color3.fromRGB(240, 240, 240)
+            end
         end
-    end
+    end)
 end
 
--- 4. FILTER OBJEK & PLOT
+-- ================= FILTER OBJEK & PLOT =================
+local function isSafePlotName(objName)
+    for _, keyword in ipairs(CONFIG.SafePlotKeywords) do
+        if objName:find(keyword) then
+            return true
+        end
+    end
+    return objName == "1"
+end
+
 local function processObject(obj)
-    if not VulkanActive then return end
+    if not Session.Alive or not VulkanActive then return end
 
-    if obj:IsA("Decal") or obj:IsA("Texture") then
-        obj:Destroy()
-        return
-    end
-
-    local objName = obj.Name:lower()
-
-    if objName:find("baseplate") or objName:find("ground") or objName:find("terrain") or obj:IsA("Terrain") then
-        if obj:IsA("BasePart") then
-            obj.Material = Enum.Material.SmoothPlastic
-            obj.Color = Color3.fromRGB(245, 245, 245)
-        end
-        return
-    end
-
-    if objName:find("plot") or objName:find("base") then
-        local isSafePlot = false
-
-        if objName:find("plot1") or objName:find("plot 1") or objName == "1" then
-            isSafePlot = true
-        elseif obj:FindFirstChild("Owner") and tostring(obj.Owner.Value) == LocalPlayer.Name then
-            isSafePlot = true
-        elseif objName:find(LocalPlayer.Name:lower()) then
-            isSafePlot = true
-        end
-
-        if not isSafePlot then
+    pcall(function()
+        if obj:IsA("Decal") or obj:IsA("Texture") then
             obj:Destroy()
             return
         end
-    end
 
-    if obj:IsA("BasePart") then
-        obj.Material = Enum.Material.SmoothPlastic
-        obj.Color = Color3.fromRGB(255, 255, 255)
-        obj.Reflectance = 0
-    end
+        local objName = obj.Name:lower()
+
+        if objName:find("baseplate") or objName:find("ground") or objName:find("terrain") or obj:IsA("Terrain") then
+            if obj:IsA("BasePart") then
+                obj.Material = Enum.Material.SmoothPlastic
+                obj.Color = Color3.fromRGB(245, 245, 245)
+            end
+            return
+        end
+
+        if objName:find("plot") or objName:find("base") then
+            local isSafePlot = isSafePlotName(objName)
+
+            if not isSafePlot and obj:FindFirstChild("Owner") and tostring(obj.Owner.Value) == LocalPlayer.Name then
+                isSafePlot = true
+            elseif not isSafePlot and objName:find(LocalPlayer.Name:lower()) then
+                isSafePlot = true
+            end
+
+            if not isSafePlot then
+                obj:Destroy()
+                return
+            end
+        end
+
+        if obj:IsA("BasePart") then
+            obj.Material = Enum.Material.SmoothPlastic
+            obj.Color = Color3.fromRGB(255, 255, 255)
+            obj.Reflectance = 0
+        end
+    end)
 end
 
--- 5. TOGGLE SYSTEM
+-- ================= TOGGLE SYSTEM =================
 local function enableVulkan()
     VulkanActive = true
-    
-    Lighting.GlobalShadows = false
-    Lighting.Brightness = 2
-    Lighting.Ambient = Color3.fromRGB(255, 255, 255)
-    Lighting.OutdoorAmbient = Color3.fromRGB(255, 255, 255)
+
+    pcall(function()
+        Lighting.GlobalShadows = false
+        Lighting.Brightness = 2
+        Lighting.Ambient = Color3.fromRGB(255, 255, 255)
+        Lighting.OutdoorAmbient = Color3.fromRGB(255, 255, 255)
+    end)
 
     for _, v in pairs(Workspace:GetDescendants()) do processObject(v) end
     for _, p in pairs(Players:GetPlayers()) do
         if p.Character then stripCharacter(p.Character) end
     end
 
-    DescendantConnection = Workspace.DescendantAdded:Connect(processObject)
-    PlayerConnection = Players.PlayerAdded:Connect(function(p)
-        p.CharacterAdded:Connect(stripCharacter)
+    if Session.DescendantConnection then Session.DescendantConnection:Disconnect() end
+    if Session.PlayerConnection then Session.PlayerConnection:Disconnect() end
+
+    Session.DescendantConnection = Workspace.DescendantAdded:Connect(processObject)
+    Session.PlayerConnection = Players.PlayerAdded:Connect(function(p)
+        local conn
+        conn = p.CharacterAdded:Connect(stripCharacter)
+        Session.CharacterConnections[p] = conn
     end)
 
     notifyLog(
-        "ZHUB SYSTEM ⚡", 
-        "Zhub Mode: ON aktif! Multi-Bot Anti-Lag Ready!\n\nSalam, Thaizardooo"
+        CONFIG.BrandName .. " ⚡",
+        "Mode: ON aktif! Multi-Bot Anti-Lag Ready!\n\n" .. CONFIG.PromoText
     )
 end
 
 local function disableVulkan()
     VulkanActive = false
-    
-    if DescendantConnection then DescendantConnection:Disconnect() end
-    if PlayerConnection then PlayerConnection:Disconnect() end
 
-    Lighting.GlobalShadows = OriginalShadows
-    Lighting.Brightness = OriginalBrightness
-    Lighting.Ambient = OriginalAmbient
-    Lighting.OutdoorAmbient = OriginalOutdoorAmbient
+    if Session.DescendantConnection then Session.DescendantConnection:Disconnect() end
+    if Session.PlayerConnection then Session.PlayerConnection:Disconnect() end
+
+    pcall(function()
+        Lighting.GlobalShadows = OriginalShadows
+        Lighting.Brightness = OriginalBrightness
+        Lighting.Ambient = OriginalAmbient
+        Lighting.OutdoorAmbient = OriginalOutdoorAmbient
+    end)
 
     notifyLog(
-        "ZHUB SYSTEM 🌿", 
-        "Zhub Mode: OFF!\n\nSalam, Thaizardooo"
+        CONFIG.BrandName .. " 🌿",
+        "Mode: OFF!\n\n" .. CONFIG.PromoText
     )
 end
 
--- 6. INTRO ANIMATION & GUI BUILDER
+-- ================= GUI RESET (DESTROY GUI LAMA) =================
 local ParentTarget = LocalPlayer:WaitForChild("PlayerGui")
 if ParentTarget:FindFirstChild("ZhubVulkanGui") then
     ParentTarget.ZhubVulkanGui:Destroy()
@@ -168,7 +240,7 @@ ScreenGui.Name = "ZhubVulkanGui"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = ParentTarget
 
--- INTRO FRAME (ZARSHUB)
+-- ============ INTRO FRAME (BRANDING) ============
 local IntroFrame = Instance.new("Frame")
 IntroFrame.Name = "IntroFrame"
 IntroFrame.Parent = ScreenGui
@@ -214,7 +286,7 @@ BarFill.BackgroundColor3 = Color3.fromRGB(0, 255, 150)
 BarFill.Size = UDim2.new(0, 0, 1, 0)
 BarFill.ZIndex = 12
 
--- UI MAIN FRAME
+-- ============ UI MAIN FRAME ============
 local MainFrame = Instance.new("Frame")
 local Title = Instance.new("TextLabel")
 local FpsLabel = Instance.new("TextLabel")
@@ -276,6 +348,7 @@ ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 ToggleBtn.TextSize = 12.000
 
 ToggleBtn.MouseButton1Click:Connect(function()
+    if not Session.Alive then return end
     if not VulkanActive then
         enableVulkan()
         ToggleBtn.Text = "Zhub Mode: ON"
@@ -287,70 +360,80 @@ ToggleBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- LOGIC ANIMASI INTRO ZARSHUB
+-- ============ LOGIC ANIMASI INTRO ============
 task.spawn(function()
+    if not Session.Alive then return end
+
     TweenService:Create(IntroFrame, TweenInfo.new(0.4), {BackgroundTransparency = 0.2}):Play()
     TweenService:Create(IntroSub, TweenInfo.new(0.4), {TextTransparency = 0}):Play()
     TweenService:Create(BarBackground, TweenInfo.new(0.4), {BackgroundTransparency = 0}):Play()
-    
-    local nameText = "ZarsHub"
+
+    local nameText = CONFIG.BrandName
     for i = 1, #nameText do
+        if not Session.Alive then return end
         IntroTitle.Text = string.sub(nameText, 1, i)
-        task.wait(0.1)
+        task.wait(CONFIG.IntroTypeSpeed)
     end
 
     task.wait(2.0)
+    if not Session.Alive then return end
 
     TweenService:Create(BarFill, TweenInfo.new(1.0, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.new(1, 0, 1, 0)}):Play()
     task.wait(1.1)
+    if not Session.Alive then return end
 
     TweenService:Create(IntroFrame, TweenInfo.new(0.5), {BackgroundTransparency = 1}):Play()
     TweenService:Create(IntroTitle, TweenInfo.new(0.5), {TextTransparency = 1}):Play()
     TweenService:Create(IntroSub, TweenInfo.new(0.5), {TextTransparency = 1}):Play()
     TweenService:Create(BarBackground, TweenInfo.new(0.5), {BackgroundTransparency = 1}):Play()
     TweenService:Create(BarFill, TweenInfo.new(0.5), {BackgroundTransparency = 1}):Play()
-    
+
     task.wait(0.5)
+    if not Session.Alive then return end
     IntroFrame:Destroy()
 
     MainFrame.Visible = true
     enableVulkan()
 end)
 
--- 7. AUTO GARBAGE COLLECTION (BERSIHIN RAM TIAP 3 MENIT)
+-- ============ AUTO GARBAGE COLLECTION ============
 task.spawn(function()
-    while true do
-        task.wait(180)
+    while Session.Alive do
+        task.wait(CONFIG.GcInterval)
+        if not Session.Alive then break end
         collectgarbage("collect")
     end
 end)
 
-local startTime = os.time()
+-- ============ FPS COUNTER ============
 local frameCount = 0
 local lastClock = os.clock()
 
-RunService.RenderStepped:Connect(function()
+Session.RenderConnection = RunService.RenderStepped:Connect(function()
+    if not Session.Alive then return end
     frameCount = frameCount + 1
     local currentClock = os.clock()
-    
-    if currentClock - lastClock >= 0.5 then
+
+    if currentClock - lastClock >= CONFIG.FpsUpdateInterval then
         local fps = math.floor(frameCount / (currentClock - lastClock))
-        FpsLabel.Text = "⚡ FPS: " .. tostring(fps) -- BSUG DAH DIBERSIHKAN!
+        FpsLabel.Text = "⚡ FPS: " .. tostring(fps)
         frameCount = 0
         lastClock = currentClock
     end
 end)
 
+-- ============ AFK TIMER ============
+local startTime = os.time()
 task.spawn(function()
-    while true do
+    while Session.Alive do
+        if not ScreenGui.Parent then break end
+
         local elapsed = os.time() - startTime
         local hrs = math.floor(elapsed / 3600)
         local mins = math.floor((elapsed % 3600) / 60)
         local secs = elapsed % 60
-        
+
         AfkLabel.Text = string.format("⏱️ AFK: %02dj %02dm %02ds", hrs, mins, secs)
         task.wait(1)
-        
-        if not ScreenGui.Parent then break end
     end
 end)
