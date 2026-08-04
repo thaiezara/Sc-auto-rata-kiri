@@ -1,20 +1,18 @@
 -- == ZHUB MODULE ==
 -- ========================================================
--- ZHUB MULTI-INSTANCE OPTIMIZER (FIXED LOAD & ANTI-LAG)
--- Versi refactor: connection-cleanup, execution-guard, pcall-safe
+-- ZHUB MULTI-INSTANCE OPTIMIZER (SAFE PLOT & LOW-POLY)
 -- ========================================================
 
 -- ================= CONFIG BLOCK =================
--- Semua yang sering lu tweak, taruh sini biar gak scroll-scroll
 local CONFIG = {
     FpsCap = 20,                -- Target FPS cap
     GcInterval = 180,           -- Interval garbage collection (detik)
     FpsUpdateInterval = 0.5,    -- Interval refresh FPS counter (detik)
     IntroTypeSpeed = 0.1,       -- Kecepatan animasi ketik nama intro
     BrandName = "ZarsHub",
-    OnMessage = "Mode Booster Aktif ⚡ Silahkan AFK, FPS udah di-lock buat performa maksimal.",
-    OffMessage = "Mode Booster Mati 🌿 Rejoin game buat balikin tampilan & performa normal ya.",
-    SafePlotKeywords = {"plot1", "plot 1"}, -- Keyword plot yang otomatis aman
+    OnMessage = "Mode Booster Aktif ⚡ Plot & Tanaman aman, grafis di-optimize untuk performa maksimal.",
+    OffMessage = "Mode Booster Mati 🌿 Rejoin game buat balikin tampilan normal ya.",
+    SafePlotKeywords = {"plot", "base", "garden", "farm", "plant", "seed"}, -- Diperluas agar plot & tanaman tidak terhapus
 }
 
 -- ================= SERVICES =================
@@ -27,10 +25,7 @@ local TweenService = game:GetService("TweenService")
 local LocalPlayer = Players.LocalPlayer
 
 -- ================= EXECUTION GUARD =================
--- Biar kalau script di-inject ulang, sesi lama otomatis mati duluan
--- gak numpuk thread/loop/connection dobel-dobel
 if _G.ZhubOptimizerSession then
-    -- Matiin sesi lama
     _G.ZhubOptimizerSession.Alive = false
     pcall(function()
         if _G.ZhubOptimizerSession.DescendantConnection then
@@ -51,7 +46,6 @@ if _G.ZhubOptimizerSession then
     end)
 end
 
--- Sesi baru, jadi acuan hidup/matinya semua loop di bawah
 local Session = {
     Alive = true,
     DescendantConnection = nil,
@@ -85,7 +79,7 @@ local function notifyLog(titleText, descText)
     end)
 end
 
--- ================= HAPUS PARTIKEL & SUARA (ANTI RAM BENGKAK) =================
+-- ================= HAPUS PARTIKEL & SUARA =================
 local function silenceInstance(v)
     pcall(function()
         if v:IsA("Sound") then
@@ -105,7 +99,7 @@ Session.GlobalDescendantConnection = game.DescendantAdded:Connect(function(v)
     silenceInstance(v)
 end)
 
--- ================= STRIP CHARACTER (VULKAN MODE) =================
+-- ================= STRIP CHARACTER =================
 local function stripCharacter(char)
     if not Session.Alive or not char or not VulkanActive then return end
     pcall(function()
@@ -127,54 +121,40 @@ local function stripCharacter(char)
     end)
 end
 
--- ================= FILTER OBJEK & PLOT =================
-local function isSafePlotName(objName)
+-- ================= FILTER OBJEK & PLOT (AMAN TANAMAN) =================
+local function isSafeObject(objName)
     for _, keyword in ipairs(CONFIG.SafePlotKeywords) do
         if objName:find(keyword) then
             return true
         end
     end
-    return objName == "1"
+    return false
 end
 
 local function processObject(obj)
     if not Session.Alive or not VulkanActive then return end
 
     pcall(function()
+        -- Hapus tekstur berat saja, jangan hapus objek utamanya jika itu tanaman/plot
         if obj:IsA("Decal") or obj:IsA("Texture") then
-            obj:Destroy()
+            local parentName = obj.Parent and obj.Parent.Name:lower() or ""
+            -- Jangan hapus texture yang ada di tanaman/buah agar tidak rusak total
+            if not isSafeObject(parentName) then
+                obj:Destroy()
+            end
             return
         end
 
         local objName = obj.Name:lower()
 
-        if objName:find("baseplate") or objName:find("ground") or objName:find("terrain") or obj:IsA("Terrain") then
-            if obj:IsA("BasePart") then
-                obj.Material = Enum.Material.SmoothPlastic
-                obj.Color = Color3.fromRGB(245, 245, 245)
-            end
-            return
-        end
-
-        if objName:find("plot") or objName:find("base") then
-            local isSafePlot = isSafePlotName(objName)
-
-            if not isSafePlot and obj:FindFirstChild("Owner") and tostring(obj.Owner.Value) == LocalPlayer.Name then
-                isSafePlot = true
-            elseif not isSafePlot and objName:find(LocalPlayer.Name:lower()) then
-                isSafePlot = true
-            end
-
-            if not isSafePlot then
-                obj:Destroy()
-                return
-            end
-        end
-
+        -- Ubah bagian part berat menjadi SmoothPlastic agar ringan (Low-Poly), tapi TIDAK DI-DESTROY
         if obj:IsA("BasePart") then
             obj.Material = Enum.Material.SmoothPlastic
-            obj.Color = Color3.fromRGB(255, 255, 255)
             obj.Reflectance = 0
+            -- Biarkan warna tanaman dan plot tetap terlihat normal agar bisa dipanen
+            if not isSafeObject(objName) and not (obj.Parent and isSafeObject(obj.Parent.Name:lower())) then
+                obj.Color = Color3.fromRGB(245, 245, 245)
+            end
         end
     end)
 end
@@ -230,7 +210,7 @@ local function disableVulkan()
     )
 end
 
--- ================= GUI RESET (DESTROY GUI LAMA) =================
+-- ================= GUI RESET =================
 local ParentTarget = LocalPlayer:WaitForChild("PlayerGui")
 if ParentTarget:FindFirstChild("ZhubVulkanGui") then
     ParentTarget.ZhubVulkanGui:Destroy()
@@ -241,7 +221,7 @@ ScreenGui.Name = "ZhubVulkanGui"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = ParentTarget
 
--- ============ INTRO FRAME (BRANDING) ============
+-- ============ INTRO FRAME ============
 local IntroFrame = Instance.new("Frame")
 IntroFrame.Name = "IntroFrame"
 IntroFrame.Parent = ScreenGui
@@ -263,7 +243,6 @@ IntroTitle.TextTransparency = 1
 IntroTitle.TextSize = 40
 IntroTitle.ZIndex = 11
 
--- Glow tipis di belakang teks biar berasa "premium"
 local IntroGlow = Instance.new("UIStroke")
 IntroGlow.Parent = IntroTitle
 IntroGlow.Color = Color3.fromRGB(0, 255, 150)
@@ -297,7 +276,6 @@ BarFill.BackgroundColor3 = Color3.fromRGB(0, 255, 150)
 BarFill.Size = UDim2.new(0, 0, 1, 0)
 BarFill.ZIndex = 12
 
--- Gradient warna jalan di progress bar biar gak flat ijo doang
 local BarGradient = Instance.new("UIGradient")
 BarGradient.Parent = BarFill
 BarGradient.Color = ColorSequence.new({
@@ -380,16 +358,14 @@ ToggleBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- ============ LOGIC ANIMASI INTRO (CINEMATIC VERSION) ============
+-- ============ LOGIC ANIMASI INTRO ============
 task.spawn(function()
     if not Session.Alive then return end
 
-    -- 1. Fade in background gelap
     TweenService:Create(IntroFrame, TweenInfo.new(0.4), {BackgroundTransparency = 0.2}):Play()
     task.wait(0.25)
     if not Session.Alive then return end
 
-    -- 2. Pop-in nama brand: scale kecil -> gede dikit -> normal (bounce effect pakai EasingStyle.Back)
     IntroTitle.Text = CONFIG.BrandName
     IntroTitle.Size = UDim2.new(0, 210, 0, 35)
     TweenService:Create(IntroTitle, TweenInfo.new(0.55, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
@@ -397,7 +373,6 @@ task.spawn(function()
         Size = UDim2.new(0, 300, 0, 50),
     }):Play()
 
-    -- 3. Glow pulse bareng pop-in (stroke nongol dulu baru pudar dikit)
     TweenService:Create(IntroGlow, TweenInfo.new(0.3), {Thickness = 3}):Play()
     task.wait(0.3)
     if not Session.Alive then return end
@@ -406,7 +381,6 @@ task.spawn(function()
     task.wait(0.35)
     if not Session.Alive then return end
 
-    -- 4. Subtitle naik dari bawah + fade in
     TweenService:Create(IntroSub, TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
         TextTransparency = 0,
         Position = UDim2.new(0.5, 0, 0.5, 5),
@@ -416,12 +390,10 @@ task.spawn(function()
     task.wait(0.9)
     if not Session.Alive then return end
 
-    -- 5. Progress bar jalan dengan gradient warna
     TweenService:Create(BarFill, TweenInfo.new(1.0, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.new(1, 0, 1, 0)}):Play()
     task.wait(1.1)
     if not Session.Alive then return end
 
-    -- 6. Exit: semua fade out bareng
     TweenService:Create(IntroFrame, TweenInfo.new(0.5), {BackgroundTransparency = 1}):Play()
     TweenService:Create(IntroTitle, TweenInfo.new(0.5), {TextTransparency = 1}):Play()
     TweenService:Create(IntroGlow, TweenInfo.new(0.5), {Transparency = 1}):Play()
@@ -457,6 +429,7 @@ Session.RenderConnection = RunService.RenderStepped:Connect(function()
 
     if currentClock - lastClock >= CONFIG.FpsUpdateInterval then
         local fps = math.floor(frameCount / (currentClock - lastClock))
+        FpsLabel.Text = "⚡ FPS: " + tostring(fps) -- Disesuaikan
         FpsLabel.Text = "⚡ FPS: " .. tostring(fps)
         frameCount = 0
         lastClock = currentClock
