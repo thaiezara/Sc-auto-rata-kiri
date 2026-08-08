@@ -1,238 +1,490 @@
 -- ====================================================================================
--- ZHARHUB AUTO SPRINKLER (FINAL FULL SCRIPT - DROPDOWN & FLEXIBLE PLANT DETECTOR)
+-- ZARSHUB | AUTO SPRINKLER v2.0
+-- Game: Grow a Garden
 -- ====================================================================================
 
-local Players = game:GetService("Players")
+local Players           = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local CoreGui = game:GetService("CoreGui")
-local PlayersGui = Players.LocalPlayer:WaitForChild("PlayerGui")
+local TweenService      = game:GetService("TweenService")
+local UserInputService  = game:GetService("UserInputService")
+local CoreGui           = (typeof(gethui) == "function") and gethui() or game:GetService("CoreGui")
+local LocalPlayer       = Players.LocalPlayer
 
-local player = Players.LocalPlayer
+if CoreGui:FindFirstChild("ZarsHubSprinkler") then CoreGui.ZarsHubSprinkler:Destroy() end
 
--- Coba bersihkan UI lama jika ada
-pcall(function()
-    if CoreGui:FindFirstChild("ZharHubSprinkler") then CoreGui.ZharHubSprinkler:Destroy() end
-    if PlayersGui:FindFirstChild("ZharHubSprinkler") then PlayersGui.ZharHubSprinkler:Destroy() end
-end)
+-- ====================================================================================
+-- THEME
+-- ====================================================================================
+local T = {
+    BG          = Color3.fromRGB(13, 15, 25),
+    Surface     = Color3.fromRGB(18, 22, 36),
+    Card        = Color3.fromRGB(22, 28, 46),
+    CardHover   = Color3.fromRGB(28, 36, 58),
+    Border      = Color3.fromRGB(38, 50, 85),
+    Accent      = Color3.fromRGB(99, 102, 241),
+    AccentDim   = Color3.fromRGB(55, 58, 150),
+    AccentGlow  = Color3.fromRGB(129, 132, 255),
+    Green       = Color3.fromRGB(52, 211, 153),
+    GreenDim    = Color3.fromRGB(20, 90, 65),
+    Red         = Color3.fromRGB(248, 113, 113),
+    RedDim      = Color3.fromRGB(120, 40, 40),
+    Yellow      = Color3.fromRGB(251, 191, 36),
+    Toggle      = Color3.fromRGB(37, 99, 235),
+    TextPrimary = Color3.fromRGB(241, 245, 249),
+    TextSub     = Color3.fromRGB(100, 120, 160),
+    TextMuted   = Color3.fromRGB(60, 75, 110),
+}
 
--- Memilih wadah GUI yang paling aman agar pasti muncul
-local targetParent = pcall(function() return CoreGui end) and CoreGui or PlayersGui
-
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "ZharHubSprinkler"
-screenGui.ResetOnSpawn = false
-screenGui.Parent = targetParent
-
-local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 350, 0, 320)
-mainFrame.Position = UDim2.new(0.5, -175, 0.5, -160)
-mainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
-mainFrame.BorderColor3 = Color3.fromRGB(50, 50, 60)
-mainFrame.Active = true
-mainFrame.Draggable = true
-mainFrame.Parent = screenGui
-Instance.new("UICorner", mainFrame).CornerRadius = UDim.new(0, 8)
-
-local titleBar = Instance.new("Frame")
-titleBar.Size = UDim2.new(1, 0, 0, 35)
-titleBar.BackgroundColor3 = Color3.fromRGB(35, 120, 200)
-titleBar.Parent = mainFrame
-Instance.new("UICorner", titleBar).CornerRadius = UDim.new(0, 8)
-
-local fixTitle = Instance.new("Frame")
-fixTitle.Size = UDim2.new(1, 0, 0, 5)
-fixTitle.Position = UDim2.new(0, 0, 1, -5)
-fixTitle.BackgroundColor3 = Color3.fromRGB(35, 120, 200)
-fixTitle.BorderSizePixel = 0
-fixTitle.Parent = titleBar
-
-local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, -70, 1, 0)
-title.Position = UDim2.new(0, 10, 0, 0)
-title.BackgroundTransparency = 1
-title.Text = "ZharHub | Auto Sprinkler"
-title.TextColor3 = Color3.fromRGB(255, 255, 255)
-title.Font = Enum.Font.GothamBold
-title.TextSize = 14
-title.TextXAlignment = Enum.TextXAlignment.Left
-title.Parent = titleBar
-
--- Tombol Close (X)
-local closeBtn = Instance.new("TextButton")
-closeBtn.Size = UDim2.new(0, 30, 0, 30)
-closeBtn.Position = UDim2.new(1, -35, 0, 2.5)
-closeBtn.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
-closeBtn.Text = "X"
-closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-closeBtn.Font = Enum.Font.GothamBold
-closeBtn.Parent = titleBar
-Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0, 6)
-closeBtn.MouseButton1Click:Connect(function() screenGui:Destroy() end)
-
--- Tombol Minimize (-)
-local minBtn = Instance.new("TextButton")
-minBtn.Size = UDim2.new(0, 30, 0, 30)
-minBtn.Position = UDim2.new(1, -70, 0, 2.5)
-minBtn.BackgroundColor3 = Color3.fromRGB(220, 160, 50)
-minBtn.Text = "-"
-minBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-minBtn.Font = Enum.Font.GothamBold
-minBtn.Parent = titleBar
-Instance.new("UICorner", minBtn).CornerRadius = UDim.new(0, 6)
-
-local content = Instance.new("Frame")
-content.Size = UDim2.new(1, -20, 1, -45)
-content.Position = UDim2.new(0, 10, 0, 40)
-content.BackgroundTransparency = 1
-content.Parent = mainFrame
-local layout = Instance.new("UIListLayout")
-layout.Padding = UDim.new(0, 10)
-layout.SortOrder = Enum.SortOrder.LayoutOrder
-layout.Parent = content
-
-local isMinimized = false
-minBtn.MouseButton1Click:Connect(function()
-    isMinimized = not isMinimized
-    content.Visible = not isMinimized
-    if isMinimized then
-        mainFrame.Size = UDim2.new(0, 350, 0, 35) 
-    else
-        mainFrame.Size = UDim2.new(0, 350, 0, 320) 
-    end
-end)
-
-local function createDropdown(name, options, defaultVal, zindexOffset)
-    local container = Instance.new("Frame")
-    container.Size = UDim2.new(1, 0, 0, 50)
-    container.BackgroundTransparency = 1
-    container.Parent = content
-    container.ZIndex = zindexOffset
-
-    local label = Instance.new("TextLabel")
-    label.Size = UDim2.new(1, 0, 0, 15)
-    label.BackgroundTransparency = 1
-    label.Text = name
-    label.TextColor3 = Color3.fromRGB(200, 200, 200)
-    label.Font = Enum.Font.Gotham
-    label.TextSize = 12
-    label.TextXAlignment = Enum.TextXAlignment.Left
-    label.Parent = container
-
-    local mainBtn = Instance.new("TextButton")
-    mainBtn.Size = UDim2.new(1, 0, 0, 30)
-    mainBtn.Position = UDim2.new(0, 0, 0, 20)
-    mainBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
-    mainBtn.Text = defaultVal
-    mainBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    mainBtn.Font = Enum.Font.GothamSemibold
-    mainBtn.TextSize = 13
-    mainBtn.Parent = container
-    Instance.new("UICorner", mainBtn).CornerRadius = UDim.new(0, 6)
-
-    local listFrame = Instance.new("ScrollingFrame")
-    listFrame.Size = UDim2.new(1, 0, 0, 100)
-    listFrame.Position = UDim2.new(0, 0, 1, 2)
-    listFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
-    listFrame.Visible = false
-    listFrame.ZIndex = zindexOffset + 1
-    listFrame.CanvasSize = UDim2.new(0, 0, 0, #options * 25)
-    listFrame.ScrollBarThickness = 4
-    listFrame.Parent = mainBtn
-    Instance.new("UICorner", listFrame).CornerRadius = UDim.new(0, 6)
-    
-    local listLayout = Instance.new("UIListLayout")
-    listLayout.Parent = listFrame
-
-    local selectedValue = defaultVal
-
-    for _, opt in ipairs(options) do
-        local optBtn = Instance.new("TextButton")
-        optBtn.Size = UDim2.new(1, 0, 0, 25)
-        optBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
-        optBtn.BorderSizePixel = 0
-        optBtn.Text = "  " .. opt
-        optBtn.TextColor3 = Color3.fromRGB(220, 220, 220)
-        optBtn.Font = Enum.Font.Gotham
-        optBtn.TextSize = 12
-        optBtn.TextXAlignment = Enum.TextXAlignment.Left
-        optBtn.ZIndex = zindexOffset + 1
-        optBtn.Parent = listFrame
-
-        optBtn.MouseButton1Click:Connect(function()
-            selectedValue = opt
-            mainBtn.Text = opt
-            listFrame.Visible = false
-        end)
-    end
-
-    mainBtn.MouseButton1Click:Connect(function()
-        listFrame.Visible = not listFrame.Visible
-    end)
-
-    return function() return selectedValue end
+-- ====================================================================================
+-- HELPERS
+-- ====================================================================================
+local function corner(p, r)
+    local c = Instance.new("UICorner")
+    c.CornerRadius = UDim.new(0, r or 8)
+    c.Parent = p; return c
 end
 
+local function stroke(p, col, thick)
+    local s = Instance.new("UIStroke")
+    s.Color = col or T.Border; s.Thickness = thick or 1
+    s.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    s.Parent = p; return s
+end
+
+local function tw(obj, props, t, style)
+    TweenService:Create(obj,
+        TweenInfo.new(t or 0.15, style or Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        props):Play()
+end
+
+local function uipad(p, all)
+    local u = Instance.new("UIPadding")
+    u.PaddingTop    = UDim.new(0, all)
+    u.PaddingBottom = UDim.new(0, all)
+    u.PaddingLeft   = UDim.new(0, all)
+    u.PaddingRight  = UDim.new(0, all)
+    u.Parent = p; return u
+end
+
+local function vlist(p, pad)
+    local l = Instance.new("UIListLayout")
+    l.FillDirection = Enum.FillDirection.Vertical
+    l.SortOrder = Enum.SortOrder.LayoutOrder
+    l.Padding = UDim.new(0, pad or 0)
+    l.Parent = p; return l
+end
+
+local function hlist(p, pad)
+    local l = Instance.new("UIListLayout")
+    l.FillDirection = Enum.FillDirection.Horizontal
+    l.SortOrder = Enum.SortOrder.LayoutOrder
+    l.VerticalAlignment = Enum.VerticalAlignment.Center
+    l.Padding = UDim.new(0, pad or 0)
+    l.Parent = p; return l
+end
+
+-- ====================================================================================
+-- ROOT
+-- ====================================================================================
+local Root = Instance.new("ScreenGui")
+Root.Name = "ZarsHubSprinkler"; Root.ResetOnSpawn = false
+Root.ZIndexBehavior = Enum.ZIndexBehavior.Global
+Root.DisplayOrder = 99; Root.Parent = CoreGui
+
+-- ====================================================================================
+-- SIDEBAR
+-- ====================================================================================
+local Sidebar = Instance.new("Frame")
+Sidebar.Size = UDim2.new(0, 44, 0, 340)
+Sidebar.Position = UDim2.new(0.5, -240, 0.5, -170)
+Sidebar.BackgroundColor3 = T.Surface
+Sidebar.BorderSizePixel = 0; Sidebar.ZIndex = 10; Sidebar.Parent = Root
+corner(Sidebar, 10); stroke(Sidebar, T.Border)
+
+local SBList = Instance.new("UIListLayout")
+SBList.FillDirection = Enum.FillDirection.Vertical
+SBList.SortOrder = Enum.SortOrder.LayoutOrder
+SBList.Padding = UDim.new(0, 4)
+SBList.HorizontalAlignment = Enum.HorizontalAlignment.Center
+SBList.Parent = Sidebar
+uipad(Sidebar, 8)
+
+local SBLogo = Instance.new("Frame")
+SBLogo.Size = UDim2.new(0, 28, 0, 28)
+SBLogo.BackgroundColor3 = T.Accent
+SBLogo.BorderSizePixel = 0; SBLogo.LayoutOrder = 1; SBLogo.ZIndex = 11; SBLogo.Parent = Sidebar
+corner(SBLogo, 8)
+
+local SBLogoTxt = Instance.new("TextLabel")
+SBLogoTxt.Size = UDim2.new(1,0,1,0)
+SBLogoTxt.BackgroundTransparency = 1; SBLogoTxt.Text = "Z"
+SBLogoTxt.TextColor3 = Color3.fromRGB(255,255,255); SBLogoTxt.TextSize = 14
+SBLogoTxt.Font = Enum.Font.GothamBold
+SBLogoTxt.TextXAlignment = Enum.TextXAlignment.Center
+SBLogoTxt.ZIndex = 12; SBLogoTxt.Parent = SBLogo
+
+local navItems = {
+    {icon="🏠", label="Main"},
+    {icon="🛒", label="Shop"},
+    {icon="🔗", label="Webhook"},
+    {icon="🔄", label="Trade"},
+    {icon="⚙️", label="Misc", active=true},
+    {icon="🍂", label="Fall"},
+    {icon="🐾", label="Pets"},
+    {icon="⚙", label="Settings"},
+}
+
+for i, nav in ipairs(navItems) do
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(0, 28, 0, 28)
+    btn.BackgroundColor3 = nav.active and T.Accent or Color3.fromRGB(0,0,0)
+    btn.BackgroundTransparency = nav.active and 0 or 0.8
+    btn.Text = nav.icon
+    btn.TextSize = 14; btn.Font = Enum.Font.GothamBold
+    btn.LayoutOrder = i + 1; btn.ZIndex = 11; btn.Parent = Sidebar
+    corner(btn, 6)
+    btn.MouseEnter:Connect(function()
+        if not nav.active then tw(btn,{BackgroundTransparency=0.5}) end
+    end)
+    btn.MouseLeave:Connect(function()
+        if not nav.active then tw(btn,{BackgroundTransparency=0.8}) end
+    end)
+end
+
+-- ====================================================================================
+-- MAIN PANEL
+-- ====================================================================================
+local Win = Instance.new("Frame")
+Win.Name = "Window"
+Win.Size = UDim2.new(0, 390, 0, 340)
+Win.Position = UDim2.new(0.5, -196, 0.5, -170)
+Win.BackgroundColor3 = T.BG
+Win.BorderSizePixel = 0; Win.Active = true; Win.Draggable = true
+Win.ClipsDescendants = false; Win.ZIndex = 10; Win.Parent = Root
+corner(Win, 10); stroke(Win, T.Border, 1.5)
+
+local TopLine = Instance.new("Frame")
+TopLine.Size = UDim2.new(1, -60, 0, 2)
+TopLine.Position = UDim2.new(0, 30, 0, 0)
+TopLine.BackgroundColor3 = T.Accent
+TopLine.BackgroundTransparency = 0.5
+TopLine.BorderSizePixel = 0; TopLine.ZIndex = 12; TopLine.Parent = Win
+corner(TopLine, 1)
+
+-- ====================================================================================
+-- HEADER
+-- ====================================================================================
+local Header = Instance.new("Frame")
+Header.Size = UDim2.new(1, 0, 0, 44)
+Header.BackgroundColor3 = T.Surface
+Header.BorderSizePixel = 0; Header.ZIndex = 11; Header.Parent = Win
+corner(Header, 10)
+
+local HFix = Instance.new("Frame")
+HFix.Size = UDim2.new(1, 0, 0, 10); HFix.Position = UDim2.new(0, 0, 1, -10)
+HFix.BackgroundColor3 = T.Surface; HFix.BorderSizePixel = 0; HFix.ZIndex = 11; HFix.Parent = Header
+
+local BreadFrame = Instance.new("Frame")
+BreadFrame.Size = UDim2.new(1, -80, 1, 0)
+BreadFrame.Position = UDim2.new(0, 12, 0, 0)
+BreadFrame.BackgroundTransparency = 1; BreadFrame.ZIndex = 12; BreadFrame.Parent = Header
+hlist(BreadFrame, 6)
+
+local Brand = Instance.new("TextLabel")
+Brand.Size = UDim2.new(0, 70, 1, 0)
+Brand.BackgroundTransparency = 1; Brand.Text = "ZarsHub"
+Brand.TextColor3 = T.TextPrimary; Brand.TextSize = 13
+Brand.Font = Enum.Font.GothamBold
+Brand.TextXAlignment = Enum.TextXAlignment.Left
+Brand.ZIndex = 12; Brand.Parent = BreadFrame
+
+local GameBadge = Instance.new("Frame")
+GameBadge.Size = UDim2.new(0, 110, 0, 22)
+GameBadge.BackgroundColor3 = T.AccentDim
+GameBadge.BorderSizePixel = 0; GameBadge.ZIndex = 12; GameBadge.Parent = BreadFrame
+corner(GameBadge, 11)
+
+local GameBadgeTxt = Instance.new("TextLabel")
+GameBadgeTxt.Size = UDim2.new(1, 0, 1, 0)
+GameBadgeTxt.BackgroundTransparency = 1; GameBadgeTxt.Text = "Grow a Garden"
+GameBadgeTxt.TextColor3 = T.AccentGlow; GameBadgeTxt.TextSize = 10
+GameBadgeTxt.Font = Enum.Font.GothamBold
+GameBadgeTxt.TextXAlignment = Enum.TextXAlignment.Center
+GameBadgeTxt.ZIndex = 13; GameBadgeTxt.Parent = GameBadge
+
+local function hBtn(xOff, bg, sym)
+    local b = Instance.new("TextButton")
+    b.Size = UDim2.new(0, 24, 0, 24)
+    b.Position = UDim2.new(1, xOff, 0.5, -12)
+    b.BackgroundColor3 = bg; b.Text = sym
+    b.TextColor3 = Color3.fromRGB(255,255,255)
+    b.TextSize = 10; b.Font = Enum.Font.GothamBold
+    b.ZIndex = 13; b.Parent = Header; corner(b, 5)
+    b.MouseEnter:Connect(function() tw(b,{BackgroundTransparency=0.3}) end)
+    b.MouseLeave:Connect(function() tw(b,{BackgroundTransparency=0}) end)
+    return b
+end
+
+local BtnX   = hBtn(-8,  T.Red,    "✕")
+local BtnMin = hBtn(-36, T.Yellow, "−")
+local BtnMax = hBtn(-64, Color3.fromRGB(40,50,80), "□")
+
+BtnX.MouseButton1Click:Connect(function()
+    tw(Win, {BackgroundTransparency=1}, 0.2)
+    task.delay(0.22, function() Root:Destroy() end)
+end)
+
+local isMinimized = false
+BtnMin.MouseButton1Click:Connect(function()
+    isMinimized = not isMinimized
+    if isMinimized then
+        tw(Win, {Size=UDim2.new(0,390,0,44)}, 0.2)
+    else
+        tw(Win, {Size=UDim2.new(0,390,0,340)}, 0.2)
+    end
+end)
+BtnMax.MouseButton1Click:Connect(function()
+    tw(Win, {Size=UDim2.new(0,460,0,420)}, 0.2, Enum.EasingStyle.Back)
+end)
+
+-- ====================================================================================
+-- SECTION LABEL
+-- ====================================================================================
+local SectionHeader = Instance.new("Frame")
+SectionHeader.Size = UDim2.new(1, -24, 0, 36)
+SectionHeader.Position = UDim2.new(0, 12, 0, 50)
+SectionHeader.BackgroundColor3 = T.Surface
+SectionHeader.BorderSizePixel = 0; SectionHeader.ZIndex = 11; SectionHeader.Parent = Win
+corner(SectionHeader, 8); stroke(SectionHeader, T.Border)
+
+local SHInner = Instance.new("Frame")
+SHInner.Size = UDim2.new(1, -20, 1, 0)
+SHInner.Position = UDim2.new(0, 10, 0, 0)
+SHInner.BackgroundTransparency = 1; SHInner.ZIndex = 12; SHInner.Parent = SectionHeader
+hlist(SHInner, 8)
+
+local SHDot = Instance.new("Frame")
+SHDot.Size = UDim2.new(0, 8, 0, 8)
+SHDot.BackgroundColor3 = T.Accent; SHDot.BorderSizePixel = 0
+SHDot.ZIndex = 13; SHDot.Parent = SHInner; corner(SHDot, 4)
+
+local SHTitle = Instance.new("TextLabel")
+SHTitle.Size = UDim2.new(0, 200, 1, 0)
+SHTitle.BackgroundTransparency = 1; SHTitle.Text = "Auto Sprinkler"
+SHTitle.TextColor3 = T.TextPrimary; SHTitle.TextSize = 13
+SHTitle.Font = Enum.Font.GothamBold
+SHTitle.TextXAlignment = Enum.TextXAlignment.Left
+SHTitle.ZIndex = 13; SHTitle.Parent = SHInner
+
+local VerBadge = Instance.new("Frame")
+VerBadge.Size = UDim2.new(0, 36, 0, 18)
+VerBadge.BackgroundColor3 = T.Card; VerBadge.BorderSizePixel = 0
+VerBadge.ZIndex = 13; VerBadge.Parent = SHInner; corner(VerBadge, 5)
+local VerTxt = Instance.new("TextLabel")
+VerTxt.Size = UDim2.new(1,0,1,0); VerTxt.BackgroundTransparency = 1
+VerTxt.Text = "v2.0"; VerTxt.TextColor3 = T.TextMuted; VerTxt.TextSize = 9
+VerTxt.Font = Enum.Font.Gotham; VerTxt.TextXAlignment = Enum.TextXAlignment.Center
+VerTxt.ZIndex = 14; VerTxt.Parent = VerBadge
+
+-- ====================================================================================
+-- SCROLL CONTENT
+-- ====================================================================================
+local Content = Instance.new("ScrollingFrame")
+Content.Size = UDim2.new(1, -24, 1, -96)
+Content.Position = UDim2.new(0, 12, 0, 92)
+Content.BackgroundTransparency = 1; Content.BorderSizePixel = 0
+Content.ScrollBarThickness = 3; Content.ScrollBarImageColor3 = T.AccentDim
+Content.CanvasSize = UDim2.new(0,0,0,0); Content.AutomaticCanvasSize = Enum.AutomaticSize.Y
+Content.ClipsDescendants = false; Content.ZIndex = 10; Content.Parent = Win
+vlist(Content, 0)
+
+-- ====================================================================================
+-- ROW BUILDERS
+-- ====================================================================================
+local function makeRow(labelText, order)
+    local row = Instance.new("Frame")
+    row.Size = UDim2.new(1, 0, 0, 40)
+    row.BackgroundColor3 = T.Card
+    row.BorderSizePixel = 0; row.LayoutOrder = order; row.ZIndex = 11; row.Parent = Content
+
+    if order % 2 == 0 then
+        row.BackgroundColor3 = T.Surface
+    end
+
+    local lbl = Instance.new("TextLabel")
+    lbl.Size = UDim2.new(0.52, -10, 1, 0)
+    lbl.Position = UDim2.new(0, 12, 0, 0)
+    lbl.BackgroundTransparency = 1; lbl.Text = labelText
+    lbl.TextColor3 = T.TextPrimary; lbl.TextSize = 11
+    lbl.Font = Enum.Font.GothamMedium
+    lbl.TextXAlignment = Enum.TextXAlignment.Left
+    lbl.ZIndex = 12; lbl.Parent = row
+
+    local sep = Instance.new("Frame")
+    sep.Size = UDim2.new(1, 0, 0, 1); sep.Position = UDim2.new(0, 0, 1, -1)
+    sep.BackgroundColor3 = T.Border; sep.BackgroundTransparency = 0.6
+    sep.BorderSizePixel = 0; sep.ZIndex = 11; sep.Parent = row
+
+    return row
+end
+
+local function makeToggle(row, defaultOn, onChange)
+    local track = Instance.new("Frame")
+    track.Size = UDim2.new(0, 38, 0, 20)
+    track.Position = UDim2.new(1, -50, 0.5, -10)
+    track.BackgroundColor3 = defaultOn and T.Toggle or T.Border
+    track.BorderSizePixel = 0; track.ZIndex = 13; track.Parent = row
+    corner(track, 10)
+
+    local knob = Instance.new("Frame")
+    knob.Size = UDim2.new(0, 16, 0, 16)
+    knob.Position = defaultOn and UDim2.new(1,-18,0.5,-8) or UDim2.new(0,2,0.5,-8)
+    knob.BackgroundColor3 = Color3.fromRGB(255,255,255)
+    knob.BorderSizePixel = 0; knob.ZIndex = 14; knob.Parent = track
+    corner(knob, 8)
+
+    local state = defaultOn
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1,0,1,0); btn.BackgroundTransparency = 1
+    btn.Text = ""; btn.ZIndex = 15; btn.Parent = track
+
+    btn.MouseButton1Click:Connect(function()
+        state = not state
+        tw(track, {BackgroundColor3 = state and T.Toggle or T.Border})
+        tw(knob, {Position = state and UDim2.new(1,-18,0.5,-8) or UDim2.new(0,2,0.5,-8)})
+        if onChange then onChange(state) end
+    end)
+
+    return function() return state end
+end
+
+-- Global Dropdown Handler
+local GDrop = Instance.new("ScrollingFrame")
+GDrop.BackgroundColor3 = T.Card; GDrop.BorderSizePixel = 0
+GDrop.Visible = false; GDrop.ZIndex = 300
+GDrop.CanvasSize = UDim2.new(0,0,0,0); GDrop.AutomaticCanvasSize = Enum.AutomaticSize.Y
+GDrop.ScrollBarThickness = 3; GDrop.ScrollBarImageColor3 = T.AccentDim
+GDrop.Parent = Root; corner(GDrop, 8); stroke(GDrop, T.Border)
+uipad(GDrop, 4)
+vlist(GDrop, 2)
+
+UserInputService.InputBegan:Connect(function(inp)
+    if inp.UserInputType == Enum.UserInputType.MouseButton1
+    or inp.UserInputType == Enum.UserInputType.Touch then
+        task.defer(function() GDrop.Visible = false end)
+    end
+end)
+
+local function openDrop(anchor, items, onSelect)
+    for _, c in ipairs(GDrop:GetChildren()) do
+        if c:IsA("TextButton") or c:IsA("TextLabel") then c:Destroy() end
+    end
+    local ap = anchor.AbsolutePosition; local as = anchor.AbsoluteSize
+    GDrop.Position = UDim2.new(0, ap.X, 0, ap.Y + as.Y + 3)
+    GDrop.Size     = UDim2.new(0, as.X, 0, math.min(#items * 26 + 8, 160))
+    GDrop.Visible  = true
+    for _, name in ipairs(items) do
+        local opt = Instance.new("TextButton")
+        opt.Size = UDim2.new(1,0,0,24); opt.BackgroundColor3 = T.Card
+        opt.Text = "  "..name; opt.TextColor3 = T.TextPrimary; opt.TextSize = 11
+        opt.Font = Enum.Font.Gotham; opt.TextXAlignment = Enum.TextXAlignment.Left
+        opt.ZIndex = 301; opt.Parent = GDrop; corner(opt,5)
+        opt.MouseEnter:Connect(function() tw(opt,{BackgroundColor3=T.CardHover}) end)
+        opt.MouseLeave:Connect(function() tw(opt,{BackgroundColor3=T.Card}) end)
+        opt.MouseButton1Click:Connect(function()
+            GDrop.Visible=false; if onSelect then onSelect(name) end
+        end)
+    end
+end
+
+local function makeDropRow(labelText, items, default, order)
+    local row = makeRow(labelText, order)
+
+    local dropBtn = Instance.new("TextButton")
+    dropBtn.Size = UDim2.new(0.44, -12, 0, 26)
+    dropBtn.Position = UDim2.new(0.54, 0, 0.5, -13)
+    dropBtn.BackgroundColor3 = T.Surface; dropBtn.Text = default .. "  ▾"
+    dropBtn.TextColor3 = T.Accent; dropBtn.TextSize = 10
+    dropBtn.Font = Enum.Font.GothamMedium
+    dropBtn.TextXAlignment = Enum.TextXAlignment.Center
+    dropBtn.ZIndex = 13; dropBtn.Parent = row; corner(dropBtn, 6); stroke(dropBtn, T.Border)
+
+    local selected = default
+
+    dropBtn.MouseButton1Click:Connect(function()
+        if GDrop.Visible then GDrop.Visible=false; return end
+        openDrop(dropBtn, items, function(name)
+            selected = name
+            local display = #name > 16 and name:sub(1,14).."…" or name
+            dropBtn.Text = display .. "  ▾"
+        end)
+    end)
+
+    return function() return selected end
+end
+
+-- ====================================================================================
+-- RANGKAIAN MENU (UI ELEMENT)
+-- ====================================================================================
 local sprinklerList = {
     "Common Sprinkler", "Uncommon Sprinkler", "Rare Sprinkler", 
     "Legendary Sprinkler", "Super Sprinkler", "Syrup Sprinkler", "Super Syrup Sprinkler"
 }
-local getSelectedSprinkler = createDropdown("Select Sprinkler:", sprinklerList, "Super Syrup Sprinkler", 20)
-
 local plantList = {
     "Atlantic Giant Pumpkin", "Giant Pumpkin", "Watermelon", "Carrot"
 }
-local getSelectedPlant = createDropdown("Choose Plant Target:", plantList, "Atlantic Giant Pumpkin", 10)
 
-local toggleBtn = Instance.new("TextButton")
-toggleBtn.Size = UDim2.new(1, 0, 0, 40)
-toggleBtn.BackgroundColor3 = Color3.fromRGB(40, 160, 90)
-toggleBtn.Text = "START AUTO SPRINKLER"
-toggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-toggleBtn.Font = Enum.Font.GothamBold
-toggleBtn.TextSize = 14
-toggleBtn.Parent = content
-Instance.new("UICorner", toggleBtn).CornerRadius = UDim.new(0, 6)
+local getSelectedSprinkler = makeDropRow("Select Sprinkler", sprinklerList, "Super Syrup Sprinkler", 1)
+local getSelectedPlant     = makeDropRow("Target Plant", plantList, "Atlantic Giant Pumpkin", 2)
 
-local statusBox = Instance.new("Frame")
-statusBox.Size = UDim2.new(1, 0, 0, 40)
-statusBox.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
-statusBox.Parent = content
-Instance.new("UICorner", statusBox).CornerRadius = UDim.new(0, 6)
+-- Status Row
+local statusRow = makeRow("Status Automation", 3)
+local statusVal = Instance.new("TextLabel")
+statusVal.Size = UDim2.new(0.44, -12, 0, 26)
+statusVal.Position = UDim2.new(0.54, 0, 0.5, -13)
+statusVal.BackgroundTransparency = 1; statusVal.Text = "IDLE"
+statusVal.TextColor3 = T.Yellow; statusVal.TextSize = 11
+statusVal.Font = Enum.Font.GothamBold
+statusVal.TextXAlignment = Enum.TextXAlignment.Center
+statusVal.ZIndex = 13; statusVal.Parent = statusRow
 
-local statusText = Instance.new("TextLabel")
-statusText.Size = UDim2.new(1, 0, 1, 0)
-statusText.BackgroundTransparency = 1
-statusText.Text = "Status: IDLE"
-statusText.TextColor3 = Color3.fromRGB(255, 170, 0)
-statusText.Font = Enum.Font.GothamMedium
-statusText.TextSize = 16
-statusText.Parent = statusBox
+-- Master Toggle Row
+local toggleRow = makeRow("Enable Auto Sprinkler", 4)
+local getAutoState = makeToggle(toggleRow, false, function(state)
+    if state then
+        statusVal.Text = "RUNNING"
+        statusVal.TextColor3 = T.Green
+    else
+        statusVal.Text = "IDLE"
+        statusVal.TextColor3 = T.Yellow
+    end
+end)
 
-local isRunning = false
-local timeLeft = 0
-local SPRINKLER_LIFETIME = 120
-
--- FUNGSI PENCARI TANAMAN BERDASARKAN DROPDOWN (PRESISI & FLEKSIBEL)
+-- ====================================================================================
+-- LOGIKA AUTOMATION (PLOT SCANNER & BUFFER FIRE)
+-- ====================================================================================
 local function getClosestPlant(plantName)
-    local character = player.Character
-    if not character or not character:FindFirstChild("HumanoidRootPart") then return nil end
-    local hrpPos = character.HumanoidRootPart.Position
+    local character = LocalPlayer.Character
+    local hrpPos = character and character:FindFirstChild("HumanoidRootPart") and character.HumanoidRootPart.Position or Vector3.new(0, 0, 0)
 
+    local plots = workspace:FindFirstChild("Plots")
+    if not plots then return nil end
+    
+    local myPlot = plots:FindFirstChild(LocalPlayer.Name) or plots:FindFirstChild(tostring(LocalPlayer.UserId))
+    local searchFolder = myPlot or workspace
+    
     local closestPlant = nil
     local shortestDist = math.huge
-
     local targetNameLower = string.lower(plantName)
 
-    for _, obj in ipairs(workspace:GetDescendants()) do
+    for _, obj in ipairs(searchFolder:GetDescendants()) do
         if obj:IsA("Model") then
             local objNameLower = string.lower(obj.Name)
-            
             if string.find(objNameLower, targetNameLower) or string.find(objNameLower, "pumpkin") or string.find(objNameLower, "seed") then
-                local rootPart = obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart") or obj:FindFirstChild("Base")
-                
+                local rootPart = obj:FindFirstChild("Base") or obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
                 if rootPart then
                     local dist = (hrpPos - rootPart.Position).Magnitude
-                    if dist < 100 and dist < shortestDist then
+                    if dist < 120 and dist < shortestDist then
                         shortestDist = dist
                         closestPlant = obj
                     end
@@ -240,28 +492,23 @@ local function getClosestPlant(plantName)
             end
         end
     end
-    
     return closestPlant
 end
 
 local function placeSprinklerEvent(sprinklerName, plantModel)
-    local character = player.Character
-    local backpack = player:FindFirstChild("Backpack")
+    local character = LocalPlayer.Character
+    local backpack = LocalPlayer:FindFirstChild("Backpack")
     if not character or not backpack then return false end
 
     local sprinklerTool = backpack:FindFirstChild(sprinklerName) or character:FindFirstChild(sprinklerName)
-    
-    if not sprinklerTool then
-        print("[ZharHub] ❌ " .. sprinklerName .. " tidak ditemukan di Inventory!")
-        return false 
-    end
+    if not sprinklerTool then return false end
 
-    local targetPart = plantModel:FindFirstChild("Base") or plantModel.PrimaryPart
+    local targetPart = plantModel:FindFirstChild("Base") or plantModel.PrimaryPart or plantModel:FindFirstChildWhichIsA("BasePart")
     if not targetPart then return false end
     
     local placePosition = targetPart.Position + Vector3.new(3, 0, 3)
 
-    local success, err = pcall(function()
+    local success = pcall(function()
         local nameLength = #sprinklerName
         local buf = buffer.create(16 + nameLength)
         
@@ -283,64 +530,41 @@ local function placeSprinklerEvent(sprinklerName, plantModel)
         end
     end)
 
-    if success then
-        print(string.format("[ZharHub] ✅ %s dipasang otomatis!", sprinklerName))
-        return true
-    else
-        print("[ZharHub] ⚠️ Gagal eksekusi buffer: " .. tostring(err))
-        return false
-    end
+    return success
 end
 
-toggleBtn.MouseButton1Click:Connect(function()
-    isRunning = not isRunning
-    if isRunning then
-        toggleBtn.Text = "STOP AUTO SPRINKLER"
-        toggleBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-        timeLeft = 0 
-    else
-        toggleBtn.Text = "START AUTO SPRINKLER"
-        toggleBtn.BackgroundColor3 = Color3.fromRGB(40, 160, 90)
-        statusText.Text = "Status: IDLE"
-        statusText.TextColor3 = Color3.fromRGB(255, 170, 0)
-    end
-end)
-
+-- Loop Eksekusi Utama
 task.spawn(function()
+    local timeLeft = 0
     while true do
         task.wait(1)
-        if isRunning then
+        if getAutoState() then
             if timeLeft <= 0 then
-                local currentSprinkler = getSelectedSprinkler()
-                local currentPlant = getSelectedPlant()
+                local curSprinkler = getSelectedSprinkler()
+                local curPlant     = getSelectedPlant()
+                local targetObj    = getClosestPlant(curPlant)
                 
-                local targetPlantObj = getClosestPlant(currentPlant)
-                
-                if targetPlantObj then
-                    statusText.Text = "Placing..."
-                    statusText.TextColor3 = Color3.fromRGB(0, 255, 128)
+                if targetObj then
+                    statusVal.Text = "Placing..."
+                    statusVal.TextColor3 = T.AccentGlow
                     
-                    local success = placeSprinklerEvent(currentSprinkler, targetPlantObj)
-                    
+                    local success = placeSprinklerEvent(curSprinkler, targetObj)
                     if success then
-                        timeLeft = SPRINKLER_LIFETIME 
+                        timeLeft = 120
                     else
-                        statusText.Text = "Error/Empty!"
-                        statusText.TextColor3 = Color3.fromRGB(255, 50, 50)
-                        task.wait(3) 
+                        statusVal.Text = "Tool Empty!"
+                        statusVal.TextColor3 = T.Red
+                        task.wait(3)
                     end
                 else
-                    statusText.Text = "Plant Not Found!"
-                    statusText.TextColor3 = Color3.fromRGB(255, 50, 50)
-                    task.wait(2) 
+                    statusVal.Text = "Plant Not Found"
+                    statusVal.TextColor3 = T.Red
+                    task.wait(2)
                 end
             else
                 timeLeft = timeLeft - 1
-                local mins = math.floor(timeLeft / 60)
-                local secs = timeLeft % 60
-                
-                statusText.Text = string.format("Next: %02d:%02d", mins, secs)
-                statusText.TextColor3 = Color3.fromRGB(200, 200, 200)
+                statusVal.Text = string.format("Next: %02d:%02d", math.floor(timeLeft/60), timeLeft%60)
+                statusVal.TextColor3 = T.Green
             end
         end
     end
