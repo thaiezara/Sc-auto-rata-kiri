@@ -1,5 +1,5 @@
 -- ====================================================================================
--- ZHARHUB AUTO SPRINKLER (FINAL COMBINED & FIXED PLANT DETECTOR)
+-- ZHARHUB AUTO SPRINKLER (FINAL FULL SCRIPT - DROPDOWN & FLEXIBLE PLANT DETECTOR)
 -- ====================================================================================
 
 local Players = game:GetService("Players")
@@ -150,7 +150,6 @@ local function createDropdown(name, options, defaultVal, zindexOffset)
         optBtn.Size = UDim2.new(1, 0, 0, 25)
         optBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
         optBtn.BorderSizePixel = 0
-        optBtn.Text = "  " + opt
         optBtn.Text = "  " .. opt
         optBtn.TextColor3 = Color3.fromRGB(220, 220, 220)
         optBtn.Font = Enum.Font.Gotham
@@ -213,7 +212,7 @@ local isRunning = false
 local timeLeft = 0
 local SPRINKLER_LIFETIME = 120
 
--- FUNGSI PENCARI TANAMAN FLEKSIBEL (FIX PLANT NOT FOUND)
+-- FUNGSI PENCARI TANAMAN BERDASARKAN DROPDOWN (PRESISI & FLEKSIBEL)
 local function getClosestPlant(plantName)
     local character = player.Character
     if not character or not character:FindFirstChild("HumanoidRootPart") then return nil end
@@ -222,13 +221,15 @@ local function getClosestPlant(plantName)
     local closestPlant = nil
     local shortestDist = math.huge
 
-    local searchKeyword = string.lower(plantName)
+    local targetNameLower = string.lower(plantName)
 
     for _, obj in ipairs(workspace:GetDescendants()) do
         if obj:IsA("Model") then
             local objNameLower = string.lower(obj.Name)
-            if string.find(objNameLower, searchKeyword) or string.find(objNameLower, "pumpkin") then
+            
+            if string.find(objNameLower, targetNameLower) or string.find(objNameLower, "pumpkin") or string.find(objNameLower, "seed") then
                 local rootPart = obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart") or obj:FindFirstChild("Base")
+                
                 if rootPart then
                     local dist = (hrpPos - rootPart.Position).Magnitude
                     if dist < 100 and dist < shortestDist then
@@ -239,6 +240,7 @@ local function getClosestPlant(plantName)
             end
         end
     end
+    
     return closestPlant
 end
 
@@ -285,7 +287,7 @@ local function placeSprinklerEvent(sprinklerName, plantModel)
         print(string.format("[ZharHub] ✅ %s dipasang otomatis!", sprinklerName))
         return true
     else
-        print("[ZharHub] ⚠️ Gagal eksekusi buffer: " + tostring(err))
+        print("[ZharHub] ⚠️ Gagal eksekusi buffer: " .. tostring(err))
         return false
     end
 end
