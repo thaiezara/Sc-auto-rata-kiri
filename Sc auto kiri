@@ -1,18 +1,17 @@
--- == ZHUB MODULE ==
 -- ========================================================
--- ZHUB MULTI-INSTANCE OPTIMIZER (SAFE PLOT & LOW-POLY)
+-- ZHUB MULTI-INSTANCE OPTIMIZER (ULTIMATE CACHE CLEANER - FIXED)
 -- ========================================================
 
 -- ================= CONFIG BLOCK =================
 local CONFIG = {
     FpsCap = 20,                -- Target FPS cap
-    GcInterval = 180,           -- Interval garbage collection (detik)
+    GcInterval = 60,            -- Dipercepat jadi setiap 60 detik (1 menit) bersih-bersih cache
     FpsUpdateInterval = 0.5,    -- Interval refresh FPS counter (detik)
     IntroTypeSpeed = 0.1,       -- Kecepatan animasi ketik nama intro
     BrandName = "ZarsHub",
-    OnMessage = "Mode Booster Aktif ⚡ Plot & Tanaman aman, grafis di-optimize untuk performa maksimal.",
+    OnMessage = "Mode Booster Aktif ⚡ Auto-Cache Cleaner berjalan, RAM aman anti-lag!",
     OffMessage = "Mode Booster Mati 🌿 Rejoin game buat balikin tampilan normal ya.",
-    SafePlotKeywords = {"plot", "base", "garden", "farm", "plant", "seed"}, -- Diperluas agar plot & tanaman tidak terhapus
+    SafePlotKeywords = {"plot", "base", "garden", "farm", "plant", "seed"}, 
 }
 
 -- ================= SERVICES =================
@@ -22,6 +21,7 @@ local Lighting = game:GetService("Lighting")
 local RunService = game:GetService("RunService")
 local StarterGui = game:GetService("StarterGui")
 local TweenService = game:GetService("TweenService")
+local ContentProvider = game:GetService("ContentProvider")
 local LocalPlayer = Players.LocalPlayer
 
 -- ================= EXECUTION GUARD =================
@@ -135,10 +135,8 @@ local function processObject(obj)
     if not Session.Alive or not VulkanActive then return end
 
     pcall(function()
-        -- Hapus tekstur berat saja, jangan hapus objek utamanya jika itu tanaman/plot
         if obj:IsA("Decal") or obj:IsA("Texture") then
             local parentName = obj.Parent and obj.Parent.Name:lower() or ""
-            -- Jangan hapus texture yang ada di tanaman/buah agar tidak rusak total
             if not isSafeObject(parentName) then
                 obj:Destroy()
             end
@@ -147,11 +145,9 @@ local function processObject(obj)
 
         local objName = obj.Name:lower()
 
-        -- Ubah bagian part berat menjadi SmoothPlastic agar ringan (Low-Poly), tapi TIDAK DI-DESTROY
         if obj:IsA("BasePart") then
             obj.Material = Enum.Material.SmoothPlastic
             obj.Reflectance = 0
-            -- Biarkan warna tanaman dan plot tetap terlihat normal agar bisa dipanen
             if not isSafeObject(objName) and not (obj.Parent and isSafeObject(obj.Parent.Name:lower())) then
                 obj.Color = Color3.fromRGB(245, 245, 245)
             end
@@ -276,14 +272,6 @@ BarFill.BackgroundColor3 = Color3.fromRGB(0, 255, 150)
 BarFill.Size = UDim2.new(0, 0, 1, 0)
 BarFill.ZIndex = 12
 
-local BarGradient = Instance.new("UIGradient")
-BarGradient.Parent = BarFill
-BarGradient.Color = ColorSequence.new({
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 255, 150)),
-    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(0, 200, 255)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 255, 150)),
-})
-
 -- ============ UI MAIN FRAME ============
 local MainFrame = Instance.new("Frame")
 local Title = Instance.new("TextLabel")
@@ -394,27 +382,21 @@ task.spawn(function()
     task.wait(1.1)
     if not Session.Alive then return end
 
-    TweenService:Create(IntroFrame, TweenInfo.new(0.5), {BackgroundTransparency = 1}):Play()
-    TweenService:Create(IntroTitle, TweenInfo.new(0.5), {TextTransparency = 1}):Play()
-    TweenService:Create(IntroGlow, TweenInfo.new(0.5), {Transparency = 1}):Play()
-    TweenService:Create(IntroSub, TweenInfo.new(0.5), {TextTransparency = 1}):Play()
-    TweenService:Create(BarBackground, TweenInfo.new(0.5), {BackgroundTransparency = 1}):Play()
-    TweenService:Create(BarFill, TweenInfo.new(0.5), {BackgroundTransparency = 1}):Play()
-
-    task.wait(0.5)
-    if not Session.Alive then return end
     IntroFrame:Destroy()
-
     MainFrame.Visible = true
     enableVulkan()
 end)
 
--- ============ AUTO GARBAGE COLLECTION ============
+-- ============ ULTIMATE AGGRESSIVE CACHE & GARBAGE CLEANER =================
 task.spawn(function()
     while Session.Alive do
-        task.wait(CONFIG.GcInterval)
+        task.wait(CONFIG.GcInterval) 
         if not Session.Alive then break end
-        collectgarbage("collect")
+
+        pcall(function()
+            collectgarbage("collect")
+            collectgarbage("collect") 
+        end)
     end
 end)
 
@@ -429,7 +411,6 @@ Session.RenderConnection = RunService.RenderStepped:Connect(function()
 
     if currentClock - lastClock >= CONFIG.FpsUpdateInterval then
         local fps = math.floor(frameCount / (currentClock - lastClock))
-        FpsLabel.Text = "⚡ FPS: " + tostring(fps) -- Disesuaikan
         FpsLabel.Text = "⚡ FPS: " .. tostring(fps)
         frameCount = 0
         lastClock = currentClock
